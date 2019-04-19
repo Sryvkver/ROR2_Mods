@@ -56,6 +56,7 @@ namespace Command_Artifact
             characterBody = localUser.cachedBody;
             if (notification == null)
             {
+                //Check if message was already said
                 if (!init)
                 {
                     Chat.AddMessage("<color=blue>Command Artifact Loaded</color>");
@@ -72,11 +73,6 @@ namespace Command_Artifact
                 notification.GenericNotification.fadeTime = 1f;
                 notification.GenericNotification.duration = 10000f;
                 HideSelectMenu();
-
-                if (_DEBUG)
-                {
-                    chestOpening = true;
-                }
 
             }
 
@@ -98,63 +94,7 @@ namespace Command_Artifact
                 }
 
                 //Check if something was Selected
-                if (Input.GetKey(KeyCode.LeftArrow) && Time.time > lastInput + .015f)
-                {
-                    --selectedItem;
-                    if (selectedItem < 0)
-                        selectedItem = notification.iconsCA.Count - 1;
-                    if (selectedItem > notification.iconsCA.Count - 1)
-                        selectedItem = 0;
-                    notification.setSelectorPos(selectedItem);
-                    //Chat.AddMessage(selectedItem.ToString());
-                    lastInput = Time.time;
-                }
-                else if (Input.GetKey(KeyCode.RightArrow) && Time.time > lastInput + .015f)
-                {
-                    ++selectedItem;
-                    if (selectedItem < 0)
-                        selectedItem = notification.iconsCA.Count - 1;
-                    if (selectedItem > notification.iconsCA.Count - 1)
-                        selectedItem = 0;
-                    notification.setSelectorPos(selectedItem);
-                    //Chat.AddMessage(selectedItem.ToString());
-                    lastInput = Time.time;
-                }
-                else if (Input.GetKey(KeyCode.UpArrow) && Time.time > lastInput + .015f)
-                {
-                    selectedItem -= notification.ItemsInLine;
-                    //int offset = -selectedItem;
-                    if (selectedItem < 0)
-                        selectedItem = notification.iconsCA.Count - 1;
-                    if (selectedItem > notification.iconsCA.Count - 1)
-                        selectedItem = 0;
-                    notification.setSelectorPos(selectedItem);
-                    //Chat.AddMessage(selectedItem.ToString());
-                    lastInput = Time.time;
-                }
-                else if (Input.GetKey(KeyCode.DownArrow) && Time.time > lastInput + .015f)
-                {
-                    selectedItem += notification.ItemsInLine;
-                    //int offset = selectedItem;
-                    if (selectedItem < 0)
-                        selectedItem = notification.iconsCA.Count - 1;
-                    if (selectedItem > notification.iconsCA.Count - 1)
-                        selectedItem = 0;
-                    notification.setSelectorPos(selectedItem);
-                    //Chat.AddMessage(selectedItem.ToString());
-                    lastInput = Time.time;
-                }
-                Debug.Log(selectedItem);
-
-
-                if (Input.GetKeyDown(KeyCode.F))
-                {
-                    chestOpeningE = true;
-                    ItemDef item = notification.iconsCA[selectedItem].ItemDef;
-                    PickupIndex pickupIndex = new PickupIndex(item.itemIndex);
-                    //localUser.cachedBody.inventory.GiveItem(item.itemIndex);
-                    PickupDropletController.CreatePickupDroplet(pickupIndex, chestPos + Vector3.up * 1.5f, Vector3.up * 20f + chestTransform.forward * 2f);
-                }
+                ProcessInput();
 
                 if (chestOpeningE)
                 {
@@ -170,6 +110,67 @@ namespace Command_Artifact
                     tier2Rate = 19;
                     tier3Rate = 1;
                 }
+            }
+        }
+
+        private void ProcessInput()
+        {
+            if (Input.GetKey(KeyCode.LeftArrow) && Time.time > lastInput + .015f)
+            {
+                --selectedItem;
+                if (selectedItem < 0)
+                    selectedItem = notification.iconsCA.Count - 1;
+                if (selectedItem > notification.iconsCA.Count - 1)
+                    selectedItem = 0;
+                notification.setSelectorPos(selectedItem);
+                //Chat.AddMessage(selectedItem.ToString());
+                lastInput = Time.time;
+            }
+            else if (Input.GetKey(KeyCode.RightArrow) && Time.time > lastInput + .015f)
+            {
+                ++selectedItem;
+                if (selectedItem < 0)
+                    selectedItem = notification.iconsCA.Count - 1;
+                if (selectedItem > notification.iconsCA.Count - 1)
+                    selectedItem = 0;
+                notification.setSelectorPos(selectedItem);
+                //Chat.AddMessage(selectedItem.ToString());
+                lastInput = Time.time;
+            }
+            else if (Input.GetKey(KeyCode.UpArrow) && Time.time > lastInput + .015f)
+            {
+                selectedItem -= notification.ItemsInLine;
+                //int offset = -selectedItem;
+                if (selectedItem < 0)
+                    selectedItem = notification.iconsCA.Count - 1;
+                if (selectedItem > notification.iconsCA.Count - 1)
+                    selectedItem = 0;
+                notification.setSelectorPos(selectedItem);
+                //Chat.AddMessage(selectedItem.ToString());
+                lastInput = Time.time;
+            }
+            else if (Input.GetKey(KeyCode.DownArrow) && Time.time > lastInput + .015f)
+            {
+                selectedItem += notification.ItemsInLine;
+                //int offset = selectedItem;
+                if (selectedItem < 0)
+                    selectedItem = notification.iconsCA.Count - 1;
+                if (selectedItem > notification.iconsCA.Count - 1)
+                    selectedItem = 0;
+                notification.setSelectorPos(selectedItem);
+                //Chat.AddMessage(selectedItem.ToString());
+                lastInput = Time.time;
+            }
+            Debug.Log(selectedItem);
+
+
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                chestOpeningE = true;
+                ItemDef item = notification.iconsCA[selectedItem].ItemDef;
+                PickupIndex pickupIndex = new PickupIndex(item.itemIndex);
+                //localUser.cachedBody.inventory.GiveItem(item.itemIndex);
+                PickupDropletController.CreatePickupDroplet(pickupIndex, chestPos + Vector3.up * 1.5f, Vector3.up * 20f + chestTransform.forward * 2f);
             }
         }
 
@@ -192,7 +193,7 @@ namespace Command_Artifact
             {
                 notification.PopulateTier3();
             }
-
+            
             notification.RootObject.SetActive(true);
         }
         private void HideSelectMenu()
@@ -211,13 +212,13 @@ namespace Command_Artifact
             //Chat.AddMessage(name + " - " + chestPos);
             if (name.ToLower().Contains("chest"))
             {
-                if (name.ToLower().Contains("chest2"))
+                if (name.ToLower().Contains("chest2")) //If large chest increase Odds of better Tier
                 {
                     tier1Rate = 60;
                     tier2Rate = 35;
                     tier3Rate = 5;
                 }
-                else if (name.ToLower().Contains("goldchest"))
+                else if (name.ToLower().Contains("goldchest")) //If golden chest make it 100% red item
                 {
                     tier1Rate = 0;
                     tier2Rate = 0;
@@ -233,9 +234,12 @@ namespace Command_Artifact
 
                     //protected void PlayAnimation(string layerName, string animationStateName, string playbackRateParam, float duration)
                     //"Body", "Opening", "Opening.playbackRate", Opening.duration
+
+                    //Get Animator of the chest
                     Animator modelAnimator = modelLocator.modelTransform.GetComponent<Animator>();
                     if (modelAnimator)
                     {
+                        //Play Animation
                         int layerIndex = modelAnimator.GetLayerIndex("Body");
                         modelAnimator.SetFloat("Opening.playbackRate", 1f);
                         modelAnimator.PlayInFixedTime("Opening", layerIndex, 0f);
