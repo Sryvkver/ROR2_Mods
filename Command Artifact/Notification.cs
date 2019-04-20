@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace Command_Artifact
 {
-    //Pretty much stole this file from kookehs sorry bout that ♥
+    //Used some code from @kookehs sorry about it, but it was way to tempting
     class Notification : MonoBehaviour
     {
 
@@ -48,8 +48,6 @@ namespace Command_Artifact
             }
             typeof(LanguageTextMeshController).GetField("resolvedString", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this.GenericNotification.titleText, this.GetTitle());
             typeof(LanguageTextMeshController).GetMethod("UpdateLabel", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(this.GenericNotification.titleText, new object[0]);
-            //typeof(LanguageTextMeshController).GetField("resolvedString", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this.GenericNotification.descriptionText, this.GetDescription());
-            //typeof(LanguageTextMeshController).GetMethod("UpdateLabel", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(this.GenericNotification.descriptionText, new object[0]);
         }
 
         public void SetPosition(Vector3 position)
@@ -85,7 +83,8 @@ namespace Command_Artifact
 
         public void PopulateTier1()
         {
-            selector = createSelector();
+            if(selector == null)
+                selector = createSelector();
             setSelectorPos(0);
             //List<ItemIndex> tier1 = ItemCatalog.tier1ItemList;
             List<ItemIndex> tier1 = getAvaiableItems(ItemTier.Tier1);
@@ -116,7 +115,8 @@ namespace Command_Artifact
 
         public void PopulateTier2()
         {
-            selector = createSelector();
+            if (selector == null)
+                selector = createSelector();
             setSelectorPos(0);
             //List<ItemIndex> tier2 = ItemCatalog.tier2ItemList;
             List<ItemIndex> tier2 = getAvaiableItems(ItemTier.Tier2);
@@ -147,7 +147,8 @@ namespace Command_Artifact
 
         public void PopulateTier3()
         {
-            selector = createSelector();
+            if (selector == null)
+                selector = createSelector();
             setSelectorPos(0);
             //List<ItemIndex> tier3 = ItemCatalog.tier3ItemList;
             List<ItemIndex> tier3 = getAvaiableItems(ItemTier.Tier3);

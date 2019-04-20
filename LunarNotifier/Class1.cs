@@ -39,8 +39,11 @@ namespace BepInExMods
 
         public void Awake()
         {
+            //Setup config
             confPing = base.Config.Wrap<bool>("LunarNotifier", "Autoping?", "Weather or not to automatically lunar coins. (true or false)", true);
             confPingDuration = base.Config.Wrap<int>("LunarNotifier", "Autoping Duration", "How long the ping should be visible. (Seconds)", 5);
+            //Check for some invalid Config settings
+            //Got to add more than that...
             if (pingDuration < 0)
                 pingDuration = 5;
             On.RoR2.PickupDropletController.CreatePickupDroplet += PickupDropletController_CreatePickupDroplet;
@@ -58,19 +61,23 @@ namespace BepInExMods
         private void PickupDropletController_CreatePickupDroplet(On.RoR2.PickupDropletController.orig_CreatePickupDroplet orig, PickupIndex pickupIndex, Vector3 position, Vector3 velocity)
         {
             orig.Invoke(pickupIndex, position, velocity);
+            //Check if a lunar coin dropped
             if (pickupIndex != PickupIndex.lunarCoin1)
                 return;
 
+            //Send message
             Chat.AddMessage("<color=#307FFF>Lunar Coin</color><style=cEvent> Dropped</style>");
 
             if (!shouldPing)
                 return;
-
+            
+            //Create a new Ping
             PingerController.PingInfo pingInfo = new PingerController.PingInfo
             {
                 active = true
             };
 
+            //Remove old Ping Target
             try
             {
                 Destroy(GameObject.Find("FakeLunarCoin"));
@@ -80,6 +87,8 @@ namespace BepInExMods
 
             }
 
+            //Create Ping Target
+            //Had weird glitches when I used the real Lunar coin
             GameObject fakeLunarCoin = new GameObject("FakeLunarCoin");
 
             #region OLD
@@ -113,29 +122,36 @@ namespace BepInExMods
             }*/
             #endregion
 
+            //Position it to the real Lunar Coin
             fakeLunarCoin.transform.position = position;
+            //Add neccesary Component
             fakeLunarCoin.AddComponent<ModelLocator>();
 
             pingInfo.origin = position;
 
+            //Check if another ping is active
             if (!pingInfo.active && this.pingIndicator != null)
             {
                 UnityEngine.Object.Destroy(this.pingIndicator.gameObject);
                 this.pingIndicator = null;
                 return;
             }
+            //Creat new Ping Object
             if (!this.pingIndicator)
             {
                 GameObject gameObject = (GameObject)UnityEngine.Object.Instantiate(Resources.Load("Prefabs/PingIndicator"));
                 this.pingIndicator = gameObject.GetComponent<PingIndicator>();
                 this.pingIndicator.pingOwner = base.gameObject;
             }
+            //Set some stuff
             this.pingIndicator.pingOrigin = pingInfo.origin;
             this.pingIndicator.pingNormal = pingInfo.normal;
             this.pingIndicator.pingTarget = fakeLunarCoin;
             this.pingIndicator.pingOwner = LocalUserManager.GetFirstLocalUser().cachedMasterObject;
             this.pingIndicator.RebuildPing();
 
+            //Clear old Coroutine
+            //Dont wanna have it removed because of the old one
             try
             {
                 StopCoroutine(clearCoroutine);
