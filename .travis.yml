@@ -1,0 +1,6 @@
+language: csharp
+solution: Main.sln
+mono: none
+dotnet: 2.0
+script:
+ - dotnet restore
