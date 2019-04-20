@@ -1,6 +1,7 @@
 language: csharp
 solution: Main.sln
 mono: none
+dist: xenial
 dotnet: 2.2
 script:
  - dotnet restore
