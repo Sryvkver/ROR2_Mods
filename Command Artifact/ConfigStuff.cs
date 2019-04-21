@@ -24,6 +24,7 @@ namespace Command_Artifact
         private static ConfigWrapper<int> Tier3Percantage_Golden_Conf { get; set; }
 
         private static ConfigWrapper<string> TimeScale_Conf { get; set; }
+        private static ConfigWrapper<string> SelectKey_Conf { get; set; }
         #endregion
 
         public float TimeScale {
@@ -45,11 +46,32 @@ namespace Command_Artifact
             }
         }
 
+        public KeyCode SelectButton
+        {
+            get
+            {
+                KeyCode select;
+
+                if(Enum.TryParse(SelectKey_Conf.Value, out select))
+                {
+                    return select;
+                    
+                }
+
+                return KeyCode.F;
+            }
+            set
+            {
+                SelectKey_Conf.Value = value.ToString();
+            }
+        }
+
         List<ConfigWrapper<int>> configs = new List<ConfigWrapper<int>>();
 
         public void Init(ConfigFile Config)
         {
             TimeScale_Conf = Config.Wrap<string>("Commander Artifact", "Time Scale", "How fast the game is, when the selection window is open (normal game speed: 1.0)", "0.1");
+            SelectKey_Conf = Config.Wrap<string>("Commander Artifact", "Select Key", "Which key to use for selection (Check https://docs.unity3d.com/ScriptReference/KeyCode.html for the names)", "F");
 
             //Might have to reverse this, because its reversed in the actual file...
             Tier1Percantage_Normal_Conf = Config.Wrap<int>("Normal Chest", "Tier 1 Percantage", "How likely it is that tier 1 pops up on a Normal chest (0-100)", 80);
@@ -92,6 +114,9 @@ namespace Command_Artifact
             }
 
             int value = configs[index].Value;
+            //Debug.Log("Tier: " + tier);
+            //Debug.Log("Chest: " + chestType);
+            //Debug.Log("Value: " + value);
             return value;
         }
 
