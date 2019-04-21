@@ -92,6 +92,9 @@ namespace Command_Artifact
             }
 
             int value = configs[index].Value;
+            //Debug.Log("Tier: " + tier);
+            //Debug.Log("Chest: " + chestType);
+            //Debug.Log("Value: " + value);
             return value;
         }
 

@@ -11,7 +11,7 @@ using EntityStates;
 
 namespace Command_Artifact
 {
-    [BepInPlugin("dev.felixire.Command_Artifact", "Command_Artifact", "1.1.1")]
+    [BepInPlugin("dev.felixire.Command_Artifact", "Command_Artifact", "1.2.0")]
     class Command_Artifact : BaseUnityPlugin
     {
         ConfigStuff config = new ConfigStuff();
@@ -261,7 +261,7 @@ namespace Command_Artifact
 
             //string name = self.characterBody.baseNameToken;
             //Chat.AddMessage(name + " - " + chestPos);
-            if (name.ToLower().Contains("chest"))
+            if (name.ToLower().Contains("chest") && !name.ToLower().Contains("lunarchest"))
             {
                 if (name.ToLower().Contains("chest2")) //If large chest increase Odds of better Tier
                 {
