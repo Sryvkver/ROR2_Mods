@@ -8,10 +8,11 @@ using System.Collections;
 using System.Linq;
 using System.IO;
 using EntityStates;
+using System.Collections.Generic;
 
 namespace Command_Artifact
 {
-    [BepInPlugin("dev.felixire.Command_Artifact", "Command_Artifact", "1.2.0")]
+    [BepInPlugin("dev.felixire.Command_Artifact", "Command_Artifact", "1.2.2")]
     class Command_Artifact : BaseUnityPlugin
     {
         ConfigStuff config = new ConfigStuff();
@@ -25,6 +26,7 @@ namespace Command_Artifact
         bool chestOpeningE = false; //Ended
 
         GameObject chestOBJ = null;
+        List<GameObject> opendChests = new List<GameObject>();
         Vector3 chestPos = Vector3.zero;
         Vector3 chestForward = Vector3.zero;
         //Transform chestTransform = null;
@@ -77,13 +79,14 @@ namespace Command_Artifact
                 notification.SetPosition(new Vector3((float)(Screen.width * 50) / 100f, (float)(Screen.height * 50) / 100f, 0f));
                 notification.SetSize(new Vector2(500, 250));
 
-                notification.GetTitle = (() => "Item Selector. Press F to confirm");
+                //notification.GetTitle = (() => "Item Selector. Press F to confirm");
+                notification.GetTitle = (() => string.Format("Item Selector. Press {0} to continue", config.SelectButton.ToString()));
                 //notification.GetDescription = (() => "Test");
 
                 notification.GenericNotification.fadeTime = 1f;
                 notification.GenericNotification.duration = 10000f;
                 HideSelectMenu();
-
+                opendChests.Clear();
             }
 
             if (characterBody == null && notification != null)
@@ -186,7 +189,8 @@ namespace Command_Artifact
             //Debug.Log(selectedItem);
 
 
-            if (Input.GetKeyDown(KeyCode.F))
+            //if (Input.GetKeyDown(KeyCode.F))
+            if (Input.GetKeyDown(config.SelectButton))
             {
                 chestOpeningE = true;
                 ItemDef item = notification.iconsCA[selectedItem].ItemDef;
@@ -238,7 +242,7 @@ namespace Command_Artifact
                     PurchaseInteraction chest = purchasables[i];
                     //Debug.Log("Null Check: " + (chestOBJ != null).ToString());
                     //Debug.Log("Same Check: " + (chest.gameObject == chestOBJ).ToString());
-                    if (chestOBJ != null && chest.gameObject == chestOBJ)
+                    if (chestOBJ != null && chest.gameObject == chestOBJ || opendChests.IndexOf(chest.gameObject) > -1)
                         chest.SetAvailable(false);
                     else
                         chest.SetAvailable(!shouldLock);
@@ -253,6 +257,7 @@ namespace Command_Artifact
 
             //Set Chest Gameobject, gets deleted by EmptyChestBeGone Mod, so dont use for anything important
             chestOBJ = self.outer.gameObject;
+            opendChests.Add(chestOBJ);
             //Set Position
             chestPos = self.outer.gameObject.transform.position;
             Transform chestTransform = self.outer.gameObject.transform;
@@ -277,6 +282,7 @@ namespace Command_Artifact
                 }
                 chestOpening = true;
 
+                //Broken shit
                 if (_DEBUG)
                 {
                     EntityState chestState = self.outer.GetComponent<EntityState>();
