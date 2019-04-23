@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Chest_Percantage_Modifier
 {
-    [BepInPlugin("dev.felixire.ChestPercantage", "ChestPercantage", "1.0.0")]
+    [BepInPlugin("dev.felixire.ChestPercentage", "ChestPercentage", "1.0.0")]
     class Main : BaseUnityPlugin
     {
         public Config config;
