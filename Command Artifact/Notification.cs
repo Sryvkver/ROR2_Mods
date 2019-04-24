@@ -74,13 +74,45 @@ namespace Command_Artifact
                 Destroy(iconsCA[i]);
             }
             //Remove all Images
-            while(GameObject.Find("Commander_Image") != null)
-            {
-                Destroy(GameObject.Find("Commander_Image"));
-            }
+            //while(GameObject.Find("Commander_Image") != null)
+            //{
+            //    Destroy(GameObject.Find("Commander_Image"));
+            //}
             iconsCA.Clear();
         }
 
+        public void PopulateTier(ItemTier tier)
+        {
+            if (selector == null)
+                selector = createSelector();
+            setSelectorPos(0);
+            //List<ItemIndex> tier1 = ItemCatalog.tier1ItemList;
+            List<ItemIndex> tierItems = getAvaiableItems(tier);
+
+            int line = 0;
+            int itemIndex = 0;
+            for (int i = 0; i < tierItems.Count; i++)
+            {
+                ItemDef item = ItemCatalog.GetItemDef(tierItems[i]);
+                if (String.IsNullOrEmpty(item.pickupIconPath))
+                    return;
+
+                //GenericNotification.gameObject
+                IconCA icon = new IconCA(item, GenericNotification);
+                iconsCA.Add(icon);
+
+                if (i % ItemsInLine == 0)
+                {
+                    line++;
+                    itemIndex = 0;
+                }
+                int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * 50);
+                int y = (int)(-25 + (-line + 3) * 50);
+
+                icon.SetPos(x, y);
+            }
+        }
+        /*
         public void PopulateTier1()
         {
             if(selector == null)
@@ -176,7 +208,7 @@ namespace Command_Artifact
                 icon.SetPos(x, y);
             }
         }
-
+        */
         private List<ItemIndex> getAvaiableItems(ItemTier itemTier)
         {
             List<ItemIndex> items = new List<ItemIndex>();
