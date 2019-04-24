@@ -42,6 +42,8 @@ namespace Command_Artifact
             orig.Invoke(self, activator);
 
             CharacterBody player = activator.GetComponent<CharacterBody>();
+            if (!player)
+                return;
 
             CharacterMaster characterMaster = this.gameObject.GetComponent<CharacterMaster>();
             if (!characterMaster)

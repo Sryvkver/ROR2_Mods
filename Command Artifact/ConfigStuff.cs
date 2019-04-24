@@ -97,16 +97,16 @@ namespace Command_Artifact
 
             //Might have to reverse this, because its reversed in the actual file...
             Tier1Percantage_Normal_Conf = Config.Wrap<int>("Normal Chest", "Tier 1 Percantage", "How likely it is that tier 1 pops up on a Normal chest (0-100)", 80);
-            Tier2Percantage_Normal_Conf = Config.Wrap<int>("Normal Chest", "Tier 2 Percantage", "How likely it is that tier 2 pops up on a Normal chest (0-100)", 19);
-            Tier3Percantage_Normal_Conf = Config.Wrap<int>("Normal Chest", "Tier 3 Percantage", "How likely it is that tier 3 pops up on a Normal chest (0-100) (technically not needed)", 01);
+            Tier2Percantage_Normal_Conf = Config.Wrap<int>("Normal Chest", "Tier 2 Percantage", "How likely it is that tier 2 pops up on a Normal chest (0-100)", 20);
+            Tier3Percantage_Normal_Conf = Config.Wrap<int>("Normal Chest", "Tier 3 Percantage", "How likely it is that tier 3 pops up on a Normal chest (0-100)", 01);
 
             Tier1Percantage_Large_Conf = Config.Wrap<int>("Large Chest", "Tier 1 Percantage", "How likely it is that tier 1 pops up on a Large chest (0-100)", 0);
             Tier2Percantage_Large_Conf = Config.Wrap<int>("Large Chest", "Tier 2 Percantage", "How likely it is that tier 2 pops up on a Large chest (0-100)", 80);
-            Tier3Percantage_Large_Conf = Config.Wrap<int>("Large Chest", "Tier 3 Percantage", "How likely it is that tier 3 pops up on a Large chest (0-100) (technically not needed)", 20);
+            Tier3Percantage_Large_Conf = Config.Wrap<int>("Large Chest", "Tier 3 Percantage", "How likely it is that tier 3 pops up on a Large chest (0-100)", 20);
 
             Tier1Percantage_Golden_Conf = Config.Wrap<int>("Golden Chest", "Tier 1 Percantage", "How likely it is that tier 1 pops up on a Golden chest (0-100)", 000);
             Tier2Percantage_Golden_Conf = Config.Wrap<int>("Golden Chest", "Tier 2 Percantage", "How likely it is that tier 2 pops up on a Golden chest (0-100)", 000);
-            Tier3Percantage_Golden_Conf = Config.Wrap<int>("Golden Chest", "Tier 3 Percantage", "How likely it is that tier 3 pops up on a Golden chest (0-100) (technically not needed)", 100);
+            Tier3Percantage_Golden_Conf = Config.Wrap<int>("Golden Chest", "Tier 3 Percantage", "How likely it is that tier 3 pops up on a Golden chest (0-100)", 100);
 
             configs.Add(Tier1Percantage_Normal_Conf);
             configs.Add(Tier2Percantage_Normal_Conf);

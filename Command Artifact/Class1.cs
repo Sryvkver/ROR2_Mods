@@ -58,13 +58,6 @@ namespace Command_Artifact
 
             if (notification == null)
             {
-                //Check if message was already said
-                if (!init)
-                {
-                    Chat.AddMessage("<color=blue>Command Artifact Loaded</color>");
-                    init = true;
-                }
-
                 foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
                 {
                     if (player.gameObject.GetComponent<CA_Manager>() == null)
@@ -89,6 +82,14 @@ namespace Command_Artifact
                         notification.GenericNotification.duration = 10000f;
                         player.gameObject.GetComponent<CA_Manager>().HideSelectMenu();
                         opendChests.Clear();
+                    }
+
+                    //Check if message was already said
+                    if (!init)
+                    {
+                        SetGlobalTimeScale(config.TimeScaleDefault);
+                        Chat.AddMessage("<color=blue>Command Artifact Loaded</color>");
+                        init = true;
                     }
                 }
             }
