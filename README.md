@@ -6,4 +6,7 @@ If the code looks bad or isnt well documented, I am sorry but I am not used to i
 [Command Artifact]
 
 [TODO]
-- Add config to enable all items, not just unlocked ones (@gabeykins#1165 )
+- Add config to enable all items, not just unlocked ones (@gabeykins#1165)
+- Test Multiplayer changes
+- A lot of other shitz
+- Make it work with all purchasables (Equipment, Lunar ...)
