@@ -36,7 +36,7 @@ namespace Command_Artifact
 
         private void PurchaseInteraction_OnInteractionBegin(On.RoR2.PurchaseInteraction.orig_OnInteractionBegin orig, PurchaseInteraction self, Interactor activator)
         {
-            if (currState == State.Opening)
+            if (currState != State.Idle)
                 return;
 
             orig.Invoke(self, activator);
@@ -51,14 +51,14 @@ namespace Command_Artifact
 
             if (player.gameObject == characterMaster.GetBody().gameObject)
             {
-                Debug.Log("Same!");
+                //Debug.Log("Same!");
 
                 string objName = self.gameObject.name.ToLower();
                 Debug.Log(objName);
 
                 if (objName.Contains("chest1"))
                 {
-                    Debug.Log("Default Chest");
+                    //Debug.Log("Default Chest");
                     //Default Chest
                     tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Normal);
                     tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Normal);
@@ -68,7 +68,7 @@ namespace Command_Artifact
                 }
                 else if (objName.Contains("chest2"))
                 {
-                    Debug.Log("Large Chest");
+                    //Debug.Log("Large Chest");
                     //Large Chest
                     tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Large);
                     tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Large);
@@ -78,13 +78,31 @@ namespace Command_Artifact
                 }
                 else if (objName.Contains("goldchest"))
                 {
-                    Debug.Log("Golden Chest");
+                    //Debug.Log("Golden Chest");
                     //Golden Chest
                     tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Golden);
                     tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Golden);
                     tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Golden);
                     chestOpening = true;
                     currState = State.Opening;
+                }
+                else if (objName.Contains("isclockbox"))
+                {
+                    //Debug.Log("Rusty Chest");
+                    //Rusty Chest
+                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Rusty);
+                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Rusty);
+                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Rusty);
+                    chestOpening = true;
+                    currState = State.Opening;
+                }
+                else if (objName.Contains("equipmentbarrel"))
+                {
+                    //Debug.Log("Equipment Barrel");
+                    //Equipment Barrel
+
+                    chestOpening = true;
+                    currState = State.Equipment;
                 }
             }
         }
@@ -99,9 +117,22 @@ namespace Command_Artifact
 
                     Notification notification = this.GetComponent<Notification>();
 
-                    float[] tierRates = new float[] { tier1Rate, tier2Rate, tier3Rate};
+                    switch (currState)
+                    {
+                        case State.Idle:
+                            break;
+                        case State.Opening:
+                            float[] tierRates = new float[] { tier1Rate, tier2Rate, tier3Rate };
 
-                    PopulateSelectMenu(notification, random, tierRates);
+                            PopulateSelectMenu(notification, random, tierRates, config.AllAvaiable);
+                            break;
+                        case State.Equipment:
+                            notification.PopulateEquipment(config.AllAvaiable);
+                            break;
+                        default:
+                            break;
+                    }
+
                     ShowSelectMenu();
 
                     chestOpeningS = true;
@@ -156,7 +187,7 @@ namespace Command_Artifact
 
             for (int i = 0; i < allManagers.Length; i++)
             {
-                if (allManagers[i].currState == State.Opening)
+                if (allManagers[i].currState != State.Idle)
                     return false;
             }
             return true;
@@ -221,16 +252,36 @@ namespace Command_Artifact
             if (Input.GetKeyDown(config.SelectButton))
             {
                 chestOpeningE = true;
-                ItemDef item = notification.iconsCA[selectedItem].ItemDef;
-                Debug.Log(item.itemIndex.ToString());
-                DropItems(item.itemIndex);
+                ItemDef item;
+                EquipmentDef equipment;
+                PickupIndex pickupIndex;
+                switch (currState)
+                {
+                    case State.Idle:
+                        break;
+                    case State.Opening:
+                        item = notification.iconsCA[selectedItem].ItemDef;
+                        //Debug.Log(item.itemIndex.ToString());
+                        pickupIndex = new PickupIndex(item.itemIndex);
+                        DropItems(pickupIndex);
+                        break;
+                    case State.Equipment:
+                        equipment = notification.iconsCA[selectedItem].EquipmentDef;
+                        //Debug.Log(equipment.equipmentIndex.ToString());
+                        pickupIndex = new PickupIndex(equipment.equipmentIndex);
+                        DropItems(pickupIndex);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
         public enum State
         {
             Idle,
-            Opening
+            Opening,
+            Equipment
         }
 
         /*Might be useful later

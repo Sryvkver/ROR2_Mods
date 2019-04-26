@@ -81,13 +81,31 @@ namespace Command_Artifact
             iconsCA.Clear();
         }
 
-        public void PopulateTier(ItemTier tier)
+        public void PopulateTier(ItemTier tier, bool allAvaiable)
         {
             if (selector == null)
                 selector = createSelector();
             setSelectorPos(0);
             //List<ItemIndex> tier1 = ItemCatalog.tier1ItemList;
             List<ItemIndex> tierItems = getAvaiableItems(tier);
+
+            if (allAvaiable)
+            {
+                switch (tier)
+                {
+                    case ItemTier.Tier1:
+                        tierItems = RoR2.ItemCatalog.tier1ItemList;
+                        break;
+                    case ItemTier.Tier2:
+                        tierItems = RoR2.ItemCatalog.tier2ItemList;
+                        break;
+                    case ItemTier.Tier3:
+                        tierItems = RoR2.ItemCatalog.tier3ItemList;
+                        break;
+                    default:
+                        break;
+                }
+            }
 
             int line = 0;
             int itemIndex = 0;
@@ -112,6 +130,67 @@ namespace Command_Artifact
                 icon.SetPos(x, y);
             }
         }
+
+        public void PopulateEquipment(bool allAvaiable)
+        {
+            if (selector == null)
+                selector = createSelector();
+            setSelectorPos(0);
+            //List<ItemIndex> tier1 = ItemCatalog.tier1ItemList;
+            List<EquipmentIndex> allEquipments = RoR2.EquipmentCatalog.equipmentList;
+            List<PickupIndex> avaiableEquipment = Run.instance.availableEquipmentDropList;
+
+            int line = 0;
+            int itemIndex = 0;
+            if (allAvaiable)
+            {
+                for (int i = 0; i < allEquipments.Count; i++)
+                {
+                    EquipmentDef item = EquipmentCatalog.GetEquipmentDef(allEquipments[i]);
+                    if (String.IsNullOrEmpty(item.pickupIconPath))
+                        return;
+
+                    //GenericNotification.gameObject
+                    IconCA icon = new IconCA(item, GenericNotification);
+                    iconsCA.Add(icon);
+
+                    if (i % ItemsInLine == 0)
+                    {
+                        line++;
+                        itemIndex = 0;
+                    }
+                    int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * 50);
+                    int y = (int)(-25 + (-line + 3) * 50);
+
+                    icon.SetPos(x, y);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < avaiableEquipment.Count; i++)
+                {
+                    EquipmentDef item = EquipmentCatalog.GetEquipmentDef(avaiableEquipment[i].equipmentIndex);
+                    if (String.IsNullOrEmpty(item.pickupIconPath))
+                        return;
+
+                    //GenericNotification.gameObject
+                    IconCA icon = new IconCA(item, GenericNotification);
+                    iconsCA.Add(icon);
+
+                    if (i % ItemsInLine == 0)
+                    {
+                        line++;
+                        itemIndex = 0;
+                    }
+                    int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * 50);
+                    int y = (int)(-25 + (-line + 3) * 50);
+
+                    icon.SetPos(x, y);
+                }
+            }
+
+        }
+
         /*
         public void PopulateTier1()
         {
@@ -212,6 +291,7 @@ namespace Command_Artifact
         private List<ItemIndex> getAvaiableItems(ItemTier itemTier)
         {
             List<ItemIndex> items = new List<ItemIndex>();
+            
             switch (itemTier)
             {
                 case ItemTier.Tier1:

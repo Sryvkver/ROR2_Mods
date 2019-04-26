@@ -9,6 +9,7 @@ namespace Command_Artifact
     {
         public GameObject image;
         public ItemDef ItemDef;
+        public EquipmentDef EquipmentDef;
 
         public IconCA(ItemDef itemDef, GenericNotification genericNotification)
         {
@@ -22,6 +23,20 @@ namespace Command_Artifact
             image.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 50);
             this.image = image;
             this.ItemDef = itemDef;
+        }
+
+        public IconCA(EquipmentDef itemDef, GenericNotification genericNotification)
+        {
+            Sprite sprite = Resources.Load<Sprite>(itemDef.pickupIconPath);
+
+            GameObject image = ImageOBJ("Commander_Image");
+
+            image.GetComponent<Image>().sprite = sprite;
+            image.transform.SetParent(genericNotification.transform);
+            image.transform.position = Vector3.zero;
+            image.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 50);
+            this.image = image;
+            this.EquipmentDef = itemDef;
         }
 
         public static GameObject ImageOBJ(string name = "Commander_Image")

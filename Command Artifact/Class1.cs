@@ -12,7 +12,7 @@ using System.Collections.Generic;
 
 namespace Command_Artifact
 {
-    [BepInPlugin("dev.felixire.Command_Artifact", "Command_Artifact", "1.2.2")]
+    [BepInPlugin("dev.felixire.Command_Artifact", "Command_Artifact", "1.3.0")]
     class Command_Artifact : BaseUnityPlugin
     {
         ConfigStuff config = new ConfigStuff();
@@ -40,7 +40,7 @@ namespace Command_Artifact
 
             var epochStart = new System.DateTime(1970, 1, 1, 8, 0, 0, System.DateTimeKind.Utc);
             int seed = (int)((System.DateTime.UtcNow - epochStart).TotalSeconds / 2);
-            Debug.Log(seed);
+            Debug.Log("Seed: " + seed);
             random = new System.Random(seed);
             On.EntityStates.Barrel.Opening.OnEnter += Opening_OnEnter;
         }
@@ -96,6 +96,13 @@ namespace Command_Artifact
 
             if (characterBody == null && notification != null)
             {
+                CA_Manager[] allManagers = FindObjectsOfType<CA_Manager>();
+
+                for (int i = 0; i < allManagers.Length; i++)
+                {
+                    Destroy(allManagers[i]);
+                }
+
                 Destroy(notification);
                 notification = null;
             }
@@ -111,7 +118,7 @@ namespace Command_Artifact
             }
         }
 
-        public static void PopulateSelectMenu(Notification notification, System.Random random, float[] tierRates)
+        public static void PopulateSelectMenu(Notification notification, System.Random random, float[] tierRates, bool allAvaiable)
         {
             notification.Clear();
 
@@ -121,15 +128,15 @@ namespace Command_Artifact
             //Chat.AddMessage((rng < tier1Rate).ToString());
             if (rng < tierRates[0])
             {
-                notification.PopulateTier(ItemTier.Tier1);
+                notification.PopulateTier(ItemTier.Tier1, allAvaiable);
             }
             else if (rng < tierRates[0] + tierRates[1])
             {
-                notification.PopulateTier(ItemTier.Tier2);
+                notification.PopulateTier(ItemTier.Tier2, allAvaiable);
             }
             else if (rng < tierRates[0] + tierRates[1] + tierRates[2])
             {
-                notification.PopulateTier(ItemTier.Tier3);
+                notification.PopulateTier(ItemTier.Tier3, allAvaiable);
             }
         }
 
@@ -161,7 +168,7 @@ namespace Command_Artifact
             chestPos = obj.transform.position;
             chestForward = obj.transform.forward;
 
-            if(!name.Contains("chest1") && !name.Contains("chest2") && !name.Contains("goldchest"))
+            if(!name.Contains("chest1") && !name.Contains("chest2") && !name.Contains("goldchest") && !name.Contains("equipmentbarrel") && !name.Contains("isclockbox"))
             {
                 orig.Invoke(self);
                 return;
@@ -222,11 +229,11 @@ namespace Command_Artifact
             //throw new System.NotImplementedException();
         }
         */
-        public static void DropItems(ItemIndex item)
+        public static void DropItems(PickupIndex item)
         {
-            PickupIndex pickupIndex = new PickupIndex(item);
+            //PickupIndex pickupIndex = new PickupIndex(item);
             //localUser.cachedBody.inventory.GiveItem(item.itemIndex);
-            PickupDropletController.CreatePickupDroplet(pickupIndex, chestPos + Vector3.up * 1.5f, Vector3.up * 20f + chestForward * 2f);
+            PickupDropletController.CreatePickupDroplet(item, chestPos + Vector3.up * 1.5f, Vector3.up * 20f + chestForward * 2f);
             //PickupDropletController.CreatePickupDroplet(pickupIndex, Vector3.zero, Vector3.zero);
         }
 

@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LunarNotifier", "LunarNotif
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command Artifact", "Command Artifact\Command Artifact.csproj", "{8D99C665-E936-4C24-8140-A3866B10DA7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chest Percantage Modifier", "Chest Percantage Modifier\Chest Percantage Modifier.csproj", "{B3C473B6-0616-46B3-98C9-AE703E887AD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chest Percantage Modifier", "Chest Percantage Modifier\Chest Percantage Modifier.csproj", "{B3C473B6-0616-46B3-98C9-AE703E887AD2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

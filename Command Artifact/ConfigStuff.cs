@@ -23,9 +23,14 @@ namespace Command_Artifact
         private static ConfigWrapper<int> Tier2Percantage_Golden_Conf { get; set; }
         private static ConfigWrapper<int> Tier3Percantage_Golden_Conf { get; set; }
 
+        private static ConfigWrapper<int> Tier1Percantage_Rusty_Conf { get; set; }
+        private static ConfigWrapper<int> Tier2Percantage_Rusty_Conf { get; set; }
+        private static ConfigWrapper<int> Tier3Percantage_Rusty_Conf { get; set; }
+
         private static ConfigWrapper<string> TimeScale_Conf { get; set; }
         private static ConfigWrapper<string> TimeScaleDefault_Conf { get; set; }
         private static ConfigWrapper<string> SelectKey_Conf { get; set; }
+        private static ConfigWrapper<bool> AllStuff_Conf { get; set; }
         #endregion
 
         public float TimeScale {
@@ -65,6 +70,16 @@ namespace Command_Artifact
                 TimeScaleDefault_Conf.Value = value.ToString();
             }
         }
+        public bool AllAvaiable {
+            get
+            {
+                bool allAvaiable = AllStuff_Conf.Value;
+                return allAvaiable;
+            } set
+            {
+                AllStuff_Conf.Value = value;
+            }
+        }
 
         public KeyCode SelectButton
         {
@@ -94,6 +109,7 @@ namespace Command_Artifact
             TimeScaleDefault_Conf = Config.Wrap<string>("Commander Artifact", "Time Scale D", "How fast the game is, when the selection window is not open (Default: 1.0)", "1.0");
             TimeScale_Conf = Config.Wrap<string>("Commander Artifact", "Time Scale", "How fast the game is, when the selection window is open (normal game speed: 1.0)", "0.1");
             SelectKey_Conf = Config.Wrap<string>("Commander Artifact", "Select Key", "Which key to use for selection (Check https://docs.unity3d.com/ScriptReference/KeyCode.html for the names)", "F");
+            AllStuff_Conf = Config.Wrap<bool>("Commander Artifact", "Everything avaiable", "Should everything be avaiable, without having it unlocked", false);
 
             //Might have to reverse this, because its reversed in the actual file...
             Tier1Percantage_Normal_Conf = Config.Wrap<int>("Normal Chest", "Tier 1 Percantage", "How likely it is that tier 1 pops up on a Normal chest (0-100)", 80);
@@ -108,6 +124,10 @@ namespace Command_Artifact
             Tier2Percantage_Golden_Conf = Config.Wrap<int>("Golden Chest", "Tier 2 Percantage", "How likely it is that tier 2 pops up on a Golden chest (0-100)", 000);
             Tier3Percantage_Golden_Conf = Config.Wrap<int>("Golden Chest", "Tier 3 Percantage", "How likely it is that tier 3 pops up on a Golden chest (0-100)", 100);
 
+            Tier1Percantage_Rusty_Conf = Config.Wrap<int>("Rusty Chest", "Tier 1 Percantage", "How likely it is that tier 1 pops up on a Rusty chest (0-100) (DOES NOT SCALE WITH KEYS)", 000);
+            Tier2Percantage_Rusty_Conf = Config.Wrap<int>("Rusty Chest", "Tier 2 Percantage", "How likely it is that tier 2 pops up on a Rusty chest (0-100) (DOES NOT SCALE WITH KEYS)", 000);
+            Tier3Percantage_Rusty_Conf = Config.Wrap<int>("Rusty Chest", "Tier 3 Percantage", "How likely it is that tier 3 pops up on a Rusty chest (0-100) (DOES NOT SCALE WITH KEYS)", 100);
+
             configs.Add(Tier1Percantage_Normal_Conf);
             configs.Add(Tier2Percantage_Normal_Conf);
             configs.Add(Tier3Percantage_Normal_Conf);
@@ -119,6 +139,10 @@ namespace Command_Artifact
             configs.Add(Tier1Percantage_Golden_Conf);
             configs.Add(Tier2Percantage_Golden_Conf);
             configs.Add(Tier3Percantage_Golden_Conf);
+
+            configs.Add(Tier1Percantage_Rusty_Conf);
+            configs.Add(Tier2Percantage_Rusty_Conf);
+            configs.Add(Tier3Percantage_Rusty_Conf);
 
             NormalizeValues();
         }
@@ -158,7 +182,7 @@ namespace Command_Artifact
 
             int index = (int)chestType * 3 + tier - 1;
 
-            if (index > 8)
+            if (index > 11)
             {
                 Debug.Log("Invalid Index when getting Chest percantage...");
                 return -1;
@@ -194,7 +218,8 @@ namespace Command_Artifact
         {
             Normal,
             Large,
-            Golden
+            Golden,
+            Rusty
         }
     }
 }
