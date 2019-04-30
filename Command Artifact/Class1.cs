@@ -21,32 +21,93 @@ namespace Command_Artifact
         bool init = false;
         System.Random random;
 
-        bool chestOpening = false;
-        bool chestOpeningS = false; //Started
-        bool chestOpeningE = false; //Ended
-
-        List<GameObject> opendChests = new List<GameObject>();
         static Vector3 chestPos = Vector3.zero;
         static Vector3 chestForward = Vector3.zero;
         //Transform chestTransform = null;
 
-        float oldTimeScale = 1f;
         CharacterBody characterBody = null;
-        Notification notification = null;
+        Notification masterNotification = null;
 
         public void Awake()
         {
             config.Init(Config);
 
+            //Generating random seed based on unix timestamp
             var epochStart = new System.DateTime(1970, 1, 1, 8, 0, 0, System.DateTimeKind.Utc);
             int seed = (int)((System.DateTime.UtcNow - epochStart).TotalSeconds / 2);
             Debug.Log("Seed: " + seed);
             random = new System.Random(seed);
+
+            //Hook needed stuff
             On.EntityStates.Barrel.Opening.OnEnter += Opening_OnEnter;
+            On.RoR2.PurchaseInteraction.OnInteractionBegin += PurchaseInteraction_OnInteractionBegin;
+            On.RoR2.Run.Update += Run_Update;
+            On.RoR2.Run.Awake += Run_Awake;
         }
 
-        public void Update()
+        private void PurchaseInteraction_OnInteractionBegin(On.RoR2.PurchaseInteraction.orig_OnInteractionBegin orig, PurchaseInteraction self, Interactor activator)
         {
+            CA_Manager[] allManagers = FindObjectsOfType<CA_Manager>();
+
+            for (int i = 0; i < allManagers.Length; i++)
+            {
+                //-1 = Error; 0 = Same but not idling; 1 = Same and Idling 2 = Not same
+                int check = allManagers[i].PurchaseInteraction_Receiver(self, activator);
+                if (check == 1)
+                {
+                    orig.Invoke(self, activator);
+                    break;
+                }
+                else if (check == 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        private void Run_Awake(On.RoR2.Run.orig_Awake orig, Run self)
+        {
+            //Hopefully this runs only once
+            //Try to leftovers
+            try
+            {
+                CA_Manager[] allManagers = FindObjectsOfType<CA_Manager>();
+
+                for (int i = 0; i < allManagers.Length; i++)
+                {
+                    Destroy(allManagers[i]);
+                }
+
+                Notification[] allSelectors = FindObjectsOfType<Notification>();
+
+                for (int i = 0; i < allSelectors.Length; i++)
+                {
+                    Destroy(allSelectors[i]);
+                }
+
+                Destroy(masterNotification);
+                Destroy(characterBody);
+            }
+            catch (System.Exception)
+            {
+            }
+
+            masterNotification = null;
+            characterBody = null;
+
+            SetGlobalTimeScale(config.TimeScaleDefault);
+            Chat.AddMessage("<color=blue>Command Artifact Loaded</color>");
+            orig.Invoke(self);
+        }
+
+        private void Run_Update(On.RoR2.Run.orig_Update orig, Run self)
+        {
+            orig.Invoke(self);
+
+            //Debug.Log(PlayerCharacterMasterController.instances.Count != FindObjectsOfType<CA_Manager>().Length);
+            //Debug.Log(string.Format("Player count: {0}; Manager Count: {1}", PlayerCharacterMasterController.instances.Count, FindObjectsOfType<CA_Manager>().Length));
+
+
             if (!Run.instance || Run.instance.time < 1)
                 return;
 
@@ -56,7 +117,8 @@ namespace Command_Artifact
 
             characterBody = localUser.cachedBody;
 
-            if (notification == null)
+            //Check if every player has an CA_Manager and check master
+            if (masterNotification == null || PlayerCharacterMasterController.instances.Count != FindObjectsOfType<CA_Manager>().Length)
             {
                 foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
                 {
@@ -69,7 +131,10 @@ namespace Command_Artifact
 
                     if (player.gameObject.GetComponent<Notification>() == null)
                     {
+                        Notification notification;
                         if (player.gameObject == localUser.cachedMasterController.gameObject)
+                            masterNotification = notification = player.gameObject.AddComponent<Notification>();
+                        else
                             notification = player.gameObject.AddComponent<Notification>();
 
                         notification.transform.SetParent(player.gameObject.transform);
@@ -81,20 +146,12 @@ namespace Command_Artifact
                         notification.GenericNotification.fadeTime = 1f;
                         notification.GenericNotification.duration = 10000f;
                         player.gameObject.GetComponent<CA_Manager>().HideSelectMenu();
-                        opendChests.Clear();
-                    }
-
-                    //Check if message was already said
-                    if (!init)
-                    {
-                        SetGlobalTimeScale(config.TimeScaleDefault);
-                        Chat.AddMessage("<color=blue>Command Artifact Loaded</color>");
-                        init = true;
                     }
                 }
             }
 
-            if (characterBody == null && notification != null)
+            //If player was destroyed, remove all leftovers
+            if (characterBody == null && masterNotification != null)
             {
                 CA_Manager[] allManagers = FindObjectsOfType<CA_Manager>();
 
@@ -103,8 +160,15 @@ namespace Command_Artifact
                     Destroy(allManagers[i]);
                 }
 
-                Destroy(notification);
-                notification = null;
+                Notification[] allSelectors = FindObjectsOfType<Notification>();
+
+                for (int i = 0; i < allSelectors.Length; i++)
+                {
+                    Destroy(allSelectors[i]);
+                }
+
+                //Destroy(masterNotification);
+                masterNotification = null;
             }
         }
 
@@ -140,95 +204,21 @@ namespace Command_Artifact
             }
         }
 
-        private void LockChests(bool shouldLock)
-        {
-            //get all Object with a PurchaseInteraction (Shrine, 3D Printer, Chests)
-            PurchaseInteraction[] purchasables = UnityEngine.Object.FindObjectsOfType<PurchaseInteraction>();
-            for (int i = 0; i < purchasables.Length; i++)
-            {
-                if (purchasables[i].gameObject.name.ToLower().Contains("chest"))
-                {
-                    PurchaseInteraction chest = purchasables[i];
-                    //Debug.Log("Null Check: " + (chestOBJ != null).ToString());
-                    //Debug.Log("Same Check: " + (chest.gameObject == chestOBJ).ToString());
-                    if (opendChests.IndexOf(chest.gameObject) > -1)
-                        chest.SetAvailable(false);
-                    else
-                        chest.SetAvailable(!shouldLock);
-                }
-            }
-        }
-
         private void Opening_OnEnter(On.EntityStates.Barrel.Opening.orig_OnEnter orig, EntityStates.Barrel.Opening self)
         {
             GameObject obj = self.outer.gameObject;
             string name = obj.name.ToLower();
 
-            opendChests.Add(obj);
             chestPos = obj.transform.position;
             chestForward = obj.transform.forward;
 
-            if(!name.Contains("chest1") && !name.Contains("chest2") && !name.Contains("goldchest") && !name.Contains("equipmentbarrel") && !name.Contains("isclockbox"))
+            if (!name.Contains("chest1") && !name.Contains("chest2") && !name.Contains("goldchest") && !name.Contains("equipmentbarrel") && !name.Contains("isclockbox"))
             {
                 orig.Invoke(self);
                 return;
             }
         }
 
-        /*
-        private void Opening_OnEnter(On.EntityStates.Barrel.Opening.orig_OnEnter orig, EntityStates.Barrel.Opening self)
-        {
-            //Chat.AddMessage(self.gameObject.name);
-            string name = self.outer.gameObject.name;
-
-            opendChests.Add(self.outer.gameObject);
-            //Set Position
-            chestPos = self.outer.gameObject.transform.position;
-            Transform chestTransform = self.outer.gameObject.transform;
-            //Should make it compatible with emptyChestBeGone Mod
-            chestForward = new Vector3(chestTransform.forward.x, chestTransform.forward.y, chestTransform.forward.z);
-
-            if (name.ToLower().Contains("chest"))
-            {
-                if (name.ToLower().Contains("chest1")) //If Normal chest use Normal odds
-                {
-                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Normal);
-                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Normal);
-                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Normal);
-                }else if (name.ToLower().Contains("chest2")) //If large chest increase Odds of better Tier
-                {
-                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Large);
-                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Large);
-                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Large);
-                }
-                else if (name.ToLower().Contains("goldchest")) //If golden chest make it 100% red item
-                {
-                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Golden);
-                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Golden);
-                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Golden);
-                }
-                else
-                {
-                    orig.Invoke(self);
-                    chestOpening = false;
-                    return;
-                }
-
-                //Broken shit
-                if (_DEBUG)
-                {
-                    RunChestAnimation(self);
-                }
-            }
-            else
-            {
-                orig.Invoke(self);
-            }
-            //chestOpening = true;
-
-            //throw new System.NotImplementedException();
-        }
-        */
         public static void DropItems(PickupIndex item)
         {
             //PickupIndex pickupIndex = new PickupIndex(item);
@@ -237,6 +227,7 @@ namespace Command_Artifact
             //PickupDropletController.CreatePickupDroplet(pickupIndex, Vector3.zero, Vector3.zero);
         }
 
+        //Still Broken as hell
         public void RunChestAnimation(EntityStates.Barrel.Opening self)
         {
             EntityState chestState = self.outer.GetComponent<EntityState>();

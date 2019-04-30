@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Text;
 using UnityEngine;
 
-namespace Command_Artifact 
+namespace Command_Artifact
 {
     class ConfigStuff
     {
@@ -30,16 +30,21 @@ namespace Command_Artifact
         private static ConfigWrapper<string> TimeScale_Conf { get; set; }
         private static ConfigWrapper<string> TimeScaleDefault_Conf { get; set; }
         private static ConfigWrapper<string> SelectKey_Conf { get; set; }
+        private static ConfigWrapper<string> MoveUpKey_Conf { get; set; }
+        private static ConfigWrapper<string> MoveLeftKey_Conf { get; set; }
+        private static ConfigWrapper<string> MoveDownKey_Conf { get; set; }
+        private static ConfigWrapper<string> MoveRightKey_Conf { get; set; }
         private static ConfigWrapper<bool> AllStuff_Conf { get; set; }
         #endregion
 
-        public float TimeScale {
+        public float TimeScale
+        {
             get
             {
                 float timeScale;
 
-                
-                if(float.TryParse(TimeScale_Conf.Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture.NumberFormat, out timeScale))
+
+                if (float.TryParse(TimeScale_Conf.Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture.NumberFormat, out timeScale))
                 {
                     return timeScale;
                 }
@@ -70,12 +75,14 @@ namespace Command_Artifact
                 TimeScaleDefault_Conf.Value = value.ToString();
             }
         }
-        public bool AllAvaiable {
+        public bool AllAvaiable
+        {
             get
             {
                 bool allAvaiable = AllStuff_Conf.Value;
                 return allAvaiable;
-            } set
+            }
+            set
             {
                 AllStuff_Conf.Value = value;
             }
@@ -87,10 +94,10 @@ namespace Command_Artifact
             {
                 KeyCode select;
 
-                if(Enum.TryParse(SelectKey_Conf.Value, out select))
+                if (Enum.TryParse(SelectKey_Conf.Value, out select))
                 {
                     return select;
-                    
+
                 }
 
                 return KeyCode.F;
@@ -101,6 +108,84 @@ namespace Command_Artifact
             }
         }
 
+        public KeyCode UpButton
+        {
+            get
+            {
+                KeyCode up;
+
+                if (Enum.TryParse(MoveUpKey_Conf.Value, out up))
+                {
+                    return up;
+
+                }
+
+                return KeyCode.UpArrow;
+            }
+            set
+            {
+                MoveUpKey_Conf.Value = value.ToString();
+            }
+        }
+        public KeyCode LeftButton
+        {
+            get
+            {
+                KeyCode left;
+
+                if (Enum.TryParse(MoveLeftKey_Conf.Value, out left))
+                {
+                    return left;
+
+                }
+
+                return KeyCode.LeftArrow;
+            }
+            set
+            {
+                MoveLeftKey_Conf.Value = value.ToString();
+            }
+        }
+        public KeyCode DownButton
+        {
+            get
+            {
+                KeyCode down;
+
+                if (Enum.TryParse(MoveDownKey_Conf.Value, out down))
+                {
+                    return down;
+
+                }
+
+                return KeyCode.DownArrow;
+            }
+            set
+            {
+                MoveDownKey_Conf.Value = value.ToString();
+            }
+        }
+        public KeyCode RightButton
+        {
+            get
+            {
+                KeyCode right;
+
+                if (Enum.TryParse(MoveRightKey_Conf.Value, out right))
+                {
+                    return right;
+
+                }
+
+                return KeyCode.RightArrow;
+            }
+            set
+            {
+                MoveRightKey_Conf.Value = value.ToString();
+            }
+        }
+
+
         List<ConfigWrapper<int>> configs = new List<ConfigWrapper<int>>();
         List<float> normalizedConfigs = new List<float>();
 
@@ -108,7 +193,13 @@ namespace Command_Artifact
         {
             TimeScaleDefault_Conf = Config.Wrap<string>("Commander Artifact", "Time Scale D", "How fast the game is, when the selection window is not open (Default: 1.0)", "1.0");
             TimeScale_Conf = Config.Wrap<string>("Commander Artifact", "Time Scale", "How fast the game is, when the selection window is open (normal game speed: 1.0)", "0.1");
+
             SelectKey_Conf = Config.Wrap<string>("Commander Artifact", "Select Key", "Which key to use for selection (Check https://docs.unity3d.com/ScriptReference/KeyCode.html for the names)", "F");
+            MoveUpKey_Conf = Config.Wrap<string>("Commander Artifact", "Up Key", "Which key to use for moving the selector up (Check https://docs.unity3d.com/ScriptReference/KeyCode.html for the names)", "UpArrow");
+            MoveLeftKey_Conf = Config.Wrap<string>("Commander Artifact", "Left Key", "Which key to use for moving the selector left (Check https://docs.unity3d.com/ScriptReference/KeyCode.html for the names)", "LeftArrow");
+            MoveDownKey_Conf = Config.Wrap<string>("Commander Artifact", "Down Key", "Which key to use for moving the selector down (Check https://docs.unity3d.com/ScriptReference/KeyCode.html for the names)", "DownArrow");
+            MoveRightKey_Conf = Config.Wrap<string>("Commander Artifact", "Right Key", "Which key to use for moving the selector right (Check https://docs.unity3d.com/ScriptReference/KeyCode.html for the names)", "RightArrow");
+
             AllStuff_Conf = Config.Wrap<bool>("Commander Artifact", "Everything avaiable", "Should everything be avaiable, without having it unlocked", false);
 
             //Might have to reverse this, because its reversed in the actual file...

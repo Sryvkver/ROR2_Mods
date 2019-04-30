@@ -1,5 +1,6 @@
 ﻿using RoR2;
 using RoR2.UI;
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -31,7 +32,85 @@ namespace Command_Artifact
         public void Awake()
         {
             //On.RoR2.InteractionDriver.FixedUpdate += InteractionDriver_FixedUpdate;
-            On.RoR2.PurchaseInteraction.OnInteractionBegin += PurchaseInteraction_OnInteractionBegin;
+            //On.RoR2.PurchaseInteraction.OnInteractionBegin += PurchaseInteraction_OnInteractionBegin;
+            Chat.AddMessage("Found me");
+        }
+
+        public void OnKill()
+        {
+            //On.RoR2.PurchaseInteraction.OnInteractionBegin -= PurchaseInteraction_OnInteractionBegin;
+        }
+
+        public int PurchaseInteraction_Receiver(PurchaseInteraction self, Interactor activator)
+        {
+            CharacterBody player = activator.GetComponent<CharacterBody>();
+            if (!player)
+                return -1;
+
+            CharacterMaster characterMaster = this.gameObject.GetComponent<CharacterMaster>();
+            if (!characterMaster)
+                return -1;
+
+            if (player.gameObject == characterMaster.GetBody().gameObject)
+            {
+                //Debug.Log("Same!");
+                if (currState != State.Idle)
+                    return 0;
+
+                string objName = self.gameObject.name.ToLower();
+                Debug.Log(objName);
+
+                if (objName.Contains("chest1"))
+                {
+                    //Debug.Log("Default Chest");
+                    //Default Chest
+                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Normal);
+                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Normal);
+                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Normal);
+                    chestOpening = true;
+                    currState = State.Opening;
+                }
+                else if (objName.Contains("chest2"))
+                {
+                    //Debug.Log("Large Chest");
+                    //Large Chest
+                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Large);
+                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Large);
+                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Large);
+                    chestOpening = true;
+                    currState = State.Opening;
+                }
+                else if (objName.Contains("goldchest"))
+                {
+                    //Debug.Log("Golden Chest");
+                    //Golden Chest
+                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Golden);
+                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Golden);
+                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Golden);
+                    chestOpening = true;
+                    currState = State.Opening;
+                }
+                else if (objName.Contains("isclockbox"))
+                {
+                    //Debug.Log("Rusty Chest");
+                    //Rusty Chest
+                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Rusty);
+                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Rusty);
+                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Rusty);
+                    chestOpening = true;
+                    currState = State.Opening;
+                }
+                else if (objName.Contains("equipmentbarrel"))
+                {
+                    //Debug.Log("Equipment Barrel");
+                    //Equipment Barrel
+
+                    chestOpening = true;
+                    currState = State.Equipment;
+                }
+                return -1;
+            }
+            return 2;
         }
 
         private void PurchaseInteraction_OnInteractionBegin(On.RoR2.PurchaseInteraction.orig_OnInteractionBegin orig, PurchaseInteraction self, Interactor activator)
@@ -139,6 +218,7 @@ namespace Command_Artifact
                 }
 
                 //Check if a hotkey was pressed
+                //TODO add mouse input
                 ProcessInput();
 
                 if (chestOpeningE)
@@ -201,7 +281,7 @@ namespace Command_Artifact
 
             float inputDelay = (config.TimeScale / 0.1f * .015f);
 
-            if (Input.GetKey(KeyCode.LeftArrow) && Time.time > lastInput + inputDelay)
+            if (Input.GetKey(config.LeftButton) && Time.time > lastInput + inputDelay)
             {
                 --selectedItem;
                 if (selectedItem < 0)
@@ -212,7 +292,7 @@ namespace Command_Artifact
                 //Chat.AddMessage(selectedItem.ToString());
                 lastInput = Time.time;
             }
-            else if (Input.GetKey(KeyCode.RightArrow) && Time.time > lastInput + inputDelay)
+            else if (Input.GetKey(config.RightButton) && Time.time > lastInput + inputDelay)
             {
                 ++selectedItem;
                 if (selectedItem < 0)
@@ -223,7 +303,7 @@ namespace Command_Artifact
                 //Chat.AddMessage(selectedItem.ToString());
                 lastInput = Time.time;
             }
-            else if (Input.GetKey(KeyCode.UpArrow) && Time.time > lastInput + inputDelay)
+            else if (Input.GetKey(config.UpButton) && Time.time > lastInput + inputDelay)
             {
                 selectedItem -= notification.ItemsInLine;
                 //int offset = -selectedItem;
@@ -235,7 +315,7 @@ namespace Command_Artifact
                 //Chat.AddMessage(selectedItem.ToString());
                 lastInput = Time.time;
             }
-            else if (Input.GetKey(KeyCode.DownArrow) && Time.time > lastInput + inputDelay)
+            else if (Input.GetKey(config.DownButton) && Time.time > lastInput + inputDelay)
             {
                 selectedItem += notification.ItemsInLine;
                 //int offset = selectedItem;
