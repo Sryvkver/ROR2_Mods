@@ -1,6 +1,5 @@
 ﻿using RoR2;
 using RoR2.UI;
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -33,12 +32,6 @@ namespace Command_Artifact
         {
             //On.RoR2.InteractionDriver.FixedUpdate += InteractionDriver_FixedUpdate;
             //On.RoR2.PurchaseInteraction.OnInteractionBegin += PurchaseInteraction_OnInteractionBegin;
-            Chat.AddMessage("Found me");
-        }
-
-        public void OnKill()
-        {
-            //On.RoR2.PurchaseInteraction.OnInteractionBegin -= PurchaseInteraction_OnInteractionBegin;
         }
 
         public int PurchaseInteraction_Receiver(PurchaseInteraction self, Interactor activator)
@@ -108,82 +101,13 @@ namespace Command_Artifact
                     chestOpening = true;
                     currState = State.Equipment;
                 }
-                return -1;
+                else
+                {
+                    return 3;
+                }
+                return 1;
             }
             return 2;
-        }
-
-        private void PurchaseInteraction_OnInteractionBegin(On.RoR2.PurchaseInteraction.orig_OnInteractionBegin orig, PurchaseInteraction self, Interactor activator)
-        {
-            if (currState != State.Idle)
-                return;
-
-            orig.Invoke(self, activator);
-
-            CharacterBody player = activator.GetComponent<CharacterBody>();
-            if (!player)
-                return;
-
-            CharacterMaster characterMaster = this.gameObject.GetComponent<CharacterMaster>();
-            if (!characterMaster)
-                return;
-
-            if (player.gameObject == characterMaster.GetBody().gameObject)
-            {
-                //Debug.Log("Same!");
-
-                string objName = self.gameObject.name.ToLower();
-                Debug.Log(objName);
-
-                if (objName.Contains("chest1"))
-                {
-                    //Debug.Log("Default Chest");
-                    //Default Chest
-                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Normal);
-                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Normal);
-                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Normal);
-                    chestOpening = true;
-                    currState = State.Opening;
-                }
-                else if (objName.Contains("chest2"))
-                {
-                    //Debug.Log("Large Chest");
-                    //Large Chest
-                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Large);
-                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Large);
-                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Large);
-                    chestOpening = true;
-                    currState = State.Opening;
-                }
-                else if (objName.Contains("goldchest"))
-                {
-                    //Debug.Log("Golden Chest");
-                    //Golden Chest
-                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Golden);
-                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Golden);
-                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Golden);
-                    chestOpening = true;
-                    currState = State.Opening;
-                }
-                else if (objName.Contains("isclockbox"))
-                {
-                    //Debug.Log("Rusty Chest");
-                    //Rusty Chest
-                    tier1Rate = config.GetValue(1, ConfigStuff.ChestType.Rusty);
-                    tier2Rate = config.GetValue(2, ConfigStuff.ChestType.Rusty);
-                    tier3Rate = config.GetValue(3, ConfigStuff.ChestType.Rusty);
-                    chestOpening = true;
-                    currState = State.Opening;
-                }
-                else if (objName.Contains("equipmentbarrel"))
-                {
-                    //Debug.Log("Equipment Barrel");
-                    //Equipment Barrel
-
-                    chestOpening = true;
-                    currState = State.Equipment;
-                }
-            }
         }
 
         public void Update()
@@ -193,6 +117,7 @@ namespace Command_Artifact
                 if (!chestOpeningS)
                 {
                     SetGlobalTimeScale(config.TimeScale);
+                    //SetGlobalTimeScaleV2(config.TimeScale);
 
                     Notification notification = this.GetComponent<Notification>();
 
@@ -235,7 +160,10 @@ namespace Command_Artifact
 
                     currState = State.Idle;
                     if (CheckAllStates())
+                    {
                         SetGlobalTimeScale(config.TimeScaleDefault);
+                        //SetGlobalTimeScaleV2(config.TimeScaleDefault);
+                    }
 
                 }
             }

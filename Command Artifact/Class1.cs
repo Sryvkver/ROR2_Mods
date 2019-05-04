@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using RoR2;
+using RoR2.Networking;
 using UnityEngine;
 using UnityEngine.UI;
 using RoR2.UI;
@@ -9,12 +10,32 @@ using System.Linq;
 using System.IO;
 using EntityStates;
 using System.Collections.Generic;
+using UnityEngine.Networking;
+using System.Reflection;
+using System;
+using static RoR2.Chat;
 
 namespace Command_Artifact
 {
+    /*
+        OMG THIS SHIT DOESNT MAKE ANY SENSE ANYMORE
+        I LITTERALY CANT FIND ANYTHING ANYMORE AHHHH
+
+        [TODO]
+        [ ] Fix Multiplayer - litteraly everyone
+        [X] Add config for moving the selector - Kathlyn <-- Please check the name, I dont remember...
+        [X] Fix bug where Command Artifact breaks after game restart - ...
+        [ ] Fix bug where Item spawns wherever the last thing was opend (Money Barrel) - Jessica <-- I think...
+            -- Possible fix - Create empty gameobject in CA_Manager to save the location temporary, and delete this once the selection key was pressed!
+        [ ] Fix all class names, because they dont make any sense and are just confusing... - felixire
+
+
+    */
     [BepInPlugin("dev.felixire.Command_Artifact", "Command_Artifact", "1.3.0")]
     class Command_Artifact : BaseUnityPlugin
     {
+        NetworkHash128 TimeScalerID;
+
         ConfigStuff config = new ConfigStuff();
 
         bool _DEBUG = false;
@@ -27,9 +48,11 @@ namespace Command_Artifact
 
         CharacterBody characterBody = null;
         Notification masterNotification = null;
-
         public void Awake()
         {
+            TimeScalerID = NetworkHash128.Parse("e2656f");
+            ClientScene.RegisterSpawnHandler(TimeScalerID, SpawnTimeScaler, UnSpawnTimeScaler);
+
             config.Init(Config);
 
             //Generating random seed based on unix timestamp
@@ -45,15 +68,45 @@ namespace Command_Artifact
             On.RoR2.Run.Awake += Run_Awake;
         }
 
+        public delegate GameObject SpawnTimeScalerDelegate(Vector3 position, NetworkHash128 assetId);
+        public delegate void UnSpawnTimeScalerDelegate(GameObject spawned);
+
+        public GameObject SpawnTimeScaler(Vector3 position, NetworkHash128 assetId)
+        {
+            GameObject timescaler;
+            timescaler = new GameObject("TimeScaler");
+            timescaler.AddComponent<CA_TimeScaler>();
+            timescaler.AddComponent<NetworkIdentity>();
+            return timescaler;
+        }
+
+        public void UnSpawnTimeScaler(GameObject spawned)
+        {
+            Debug.Log("Re-pooling GameObject " + spawned.name);
+            spawned.SetActive(false);
+        }
+
         private void PurchaseInteraction_OnInteractionBegin(On.RoR2.PurchaseInteraction.orig_OnInteractionBegin orig, PurchaseInteraction self, Interactor activator)
         {
-            CA_Manager[] allManagers = FindObjectsOfType<CA_Manager>();
+            //0 = Call Orig; anything else = DO NOT CALL ORIG
+            int check = FindObjectOfType<CA_TimeScaler>().PurchaseInteraction_Stuff(self, activator);
+
+            Chat.AddMessage("CA_TimeScaler Check: " + check);
+            Chat.SendBroadcastChat(new SimpleChatMessage { baseToken = "<color=#e5eefc>CA_TimeScaler Check: {0}</color>", paramTokens = new[] { check.ToString() } });
+
+            if (check == 0)
+            {
+                orig.Invoke(self, activator);
+            }
+
+            /*CA_Manager[] allManagers = FindObjectsOfType<CA_Manager>();
 
             for (int i = 0; i < allManagers.Length; i++)
             {
-                //-1 = Error; 0 = Same but not idling; 1 = Same and Idling 2 = Not same
+                //-1 = Error; 0 = Same but not idling; 1 = Same and Idling 2 = Not same; 3 = not a chest
                 int check = allManagers[i].PurchaseInteraction_Receiver(self, activator);
-                if (check == 1)
+                Chat.AddMessage("Check: " + check);
+                if (check == 1 || check == 3)
                 {
                     orig.Invoke(self, activator);
                     break;
@@ -62,13 +115,24 @@ namespace Command_Artifact
                 {
                     break;
                 }
-            }
+            }*/
         }
 
         private void Run_Awake(On.RoR2.Run.orig_Awake orig, Run self)
         {
+            orig.Invoke(self);
+
+            CleanUpLeftovers();
+
+            //SetGlobalTimeScaleV2(config.TimeScaleDefault);
+            Chat.AddMessage("<color=blue>Command Artifact Loaded</color>");
+            init = false;
+        }
+
+        private void CleanUpLeftovers()
+        {
             //Hopefully this runs only once
-            //Try to leftovers
+            //Try to remove leftovers
             try
             {
                 CA_Manager[] allManagers = FindObjectsOfType<CA_Manager>();
@@ -94,10 +158,33 @@ namespace Command_Artifact
 
             masterNotification = null;
             characterBody = null;
+        }
+
+        private void SetupPlayer()
+        {
+            //PlayerCharacterMasterController player = LocalUserManager.GetFirstLocalUser().cachedMasterController;
+            PlayerCharacterMasterController player = PlayerCharacterMasterController.instances[0];
+            if (!RoR2Application.isInSinglePlayer && !player.isServer)
+            {
+                Chat.AddMessage("Not Host!");
+                On.EntityStates.Barrel.Opening.OnEnter -= Opening_OnEnter;
+                On.RoR2.PurchaseInteraction.OnInteractionBegin -= PurchaseInteraction_OnInteractionBegin;
+                //On.RoR2.Run.Update -= Run_Update;
+            }
+            else
+            {
+                Chat.AddMessage("Host!");
+                GameObject timeScaler = SpawnTimeScaler(Vector3.zero, TimeScalerID);
+                NetworkServer.Spawn(timeScaler, TimeScalerID);
+                //timeScaler.GetComponent<CA_TimeScaler>().SetTimeScale(config.TimeScaleDefault);
+                //timeScaler.GetComponent<CA_TimeScaler>().SetupPlayers(config, random);
+            }
+            //FindObjectOfType<CA_TimeScaler>().SetupPlayers(config, random);
+            FindObjectOfType<CA_TimeScaler>().SetupPlayer(config, random, player);
+
+            Chat.SendBroadcastChat(new SimpleChatMessage { baseToken = "<color=#e5eefc>{0}: {1}</color>", paramTokens = new[] { "Amount of Managers: ", FindObjectOfType<CA_TimeScaler>().GetAmountOfManagers().ToString() } });
 
             SetGlobalTimeScale(config.TimeScaleDefault);
-            Chat.AddMessage("<color=blue>Command Artifact Loaded</color>");
-            orig.Invoke(self);
         }
 
         private void Run_Update(On.RoR2.Run.orig_Update orig, Run self)
@@ -117,7 +204,16 @@ namespace Command_Artifact
 
             characterBody = localUser.cachedBody;
 
+            if (!init)
+            {
+                
+                SetupPlayer();
+                init = true;
+            }
+
             //Check if every player has an CA_Manager and check master
+            #region Not needed right now
+            /* M
             if (masterNotification == null || PlayerCharacterMasterController.instances.Count != FindObjectsOfType<CA_Manager>().Length)
             {
                 foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
@@ -149,26 +245,15 @@ namespace Command_Artifact
                     }
                 }
             }
+            */
+            #endregion
 
             //If player was destroyed, remove all leftovers
-            if (characterBody == null && masterNotification != null)
+            if (characterBody == null )
             {
-                CA_Manager[] allManagers = FindObjectsOfType<CA_Manager>();
+                //FindObjectOfType<CA_TimeScaler>().RemoveLeftovers();
 
-                for (int i = 0; i < allManagers.Length; i++)
-                {
-                    Destroy(allManagers[i]);
-                }
-
-                Notification[] allSelectors = FindObjectsOfType<Notification>();
-
-                for (int i = 0; i < allSelectors.Length; i++)
-                {
-                    Destroy(allSelectors[i]);
-                }
-
-                //Destroy(masterNotification);
-                masterNotification = null;
+                Debug.Log("Mhhh");
             }
         }
 
@@ -180,6 +265,8 @@ namespace Command_Artifact
             {
                 allManagers[i].SetTimeScale(timeScale);
             }
+
+            FindObjectOfType<CA_TimeScaler>().SetTimeScale(timeScale);
         }
 
         public static void PopulateSelectMenu(Notification notification, System.Random random, float[] tierRates, bool allAvaiable)

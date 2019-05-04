@@ -33,6 +33,7 @@ namespace Command_Artifact
         private void Awake()
         {
             this.Parent = RoR2Application.instance.mainCanvas.transform;
+            //this.Parent = Canvas.root
             this.RootObject = UnityEngine.Object.Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/NotificationPanel2"));
             this.GenericNotification = this.RootObject.GetComponent<GenericNotification>();
             this.GenericNotification.transform.SetParent(this.Parent);
