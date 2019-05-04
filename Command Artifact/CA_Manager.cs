@@ -21,6 +21,9 @@ namespace Command_Artifact
         private float tier2Rate = 19;
         private float tier3Rate = 1;
 
+        private Vector3 chestPos = Vector3.zero;
+        private Vector3 chestForward = Vector3.zero;
+
         public int selectedItem = 0;
         public float lastInput = 0;
 
@@ -33,7 +36,6 @@ namespace Command_Artifact
         {
             //On.RoR2.InteractionDriver.FixedUpdate += InteractionDriver_FixedUpdate;
             //On.RoR2.PurchaseInteraction.OnInteractionBegin += PurchaseInteraction_OnInteractionBegin;
-            Chat.AddMessage("Found me");
         }
 
         public void OnKill()
@@ -59,6 +61,11 @@ namespace Command_Artifact
 
                 string objName = self.gameObject.name.ToLower();
                 Debug.Log(objName);
+                if (objName.Contains("chest1") || objName.Contains("chest2") || objName.Contains("goldchest") || objName.Contains("equipmentbarrel") || objName.Contains("isclockbox"))
+                {
+                    chestPos = self.gameObject.transform.position;
+                    chestForward = self.gameObject.transform.forward;
+                }
 
                 if (objName.Contains("chest1"))
                 {
@@ -108,7 +115,11 @@ namespace Command_Artifact
                     chestOpening = true;
                     currState = State.Equipment;
                 }
-                return -1;
+                else
+                {
+                    return 3;
+                }
+                return 1;
             }
             return 2;
         }
@@ -133,6 +144,8 @@ namespace Command_Artifact
                 //Debug.Log("Same!");
 
                 string objName = self.gameObject.name.ToLower();
+                chestPos = self.gameObject.transform.position;
+                chestForward = self.gameObject.transform.forward;
                 Debug.Log(objName);
 
                 if (objName.Contains("chest1"))
@@ -243,7 +256,8 @@ namespace Command_Artifact
 
         public void SetTimeScale(float newTimeScale)
         {
-            Time.timeScale = newTimeScale;
+            if(RoR2Application.isInSinglePlayer)
+                Time.timeScale = newTimeScale;
         }
 
         public void ShowSelectMenu()
@@ -343,13 +357,15 @@ namespace Command_Artifact
                         item = notification.iconsCA[selectedItem].ItemDef;
                         //Debug.Log(item.itemIndex.ToString());
                         pickupIndex = new PickupIndex(item.itemIndex);
-                        DropItems(pickupIndex);
+                        //DropItems(pickupIndex);
+                        PickupDropletController.CreatePickupDroplet(pickupIndex, chestPos + Vector3.up * 1.5f, Vector3.up * 20f + chestForward * 2f);
                         break;
                     case State.Equipment:
                         equipment = notification.iconsCA[selectedItem].EquipmentDef;
                         //Debug.Log(equipment.equipmentIndex.ToString());
                         pickupIndex = new PickupIndex(equipment.equipmentIndex);
-                        DropItems(pickupIndex);
+                        //DropItems(pickupIndex);
+                        PickupDropletController.CreatePickupDroplet(pickupIndex, chestPos + Vector3.up * 1.5f, Vector3.up * 20f + chestForward * 2f);
                         break;
                     default:
                         break;

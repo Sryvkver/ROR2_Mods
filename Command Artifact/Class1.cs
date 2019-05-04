@@ -9,9 +9,24 @@ using System.Linq;
 using System.IO;
 using EntityStates;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 namespace Command_Artifact
 {
+    /*
+    OMG THIS SHIT DOESNT MAKE ANY SENSE ANYMORE
+    I LITTERALY CANT FIND ANYTHING ANYMORE AHHHH
+    [TODO]
+    [ ] Fix Multiplayer - litteraly everyone
+        -- maybe just make it so everyone needs the mod and runs the code themselves (this breaks timescale but meh)
+        -- This fixes the issue of fucking trying to share a variable between everyone which is litteraly impossible to do for me
+    [X] Add config for moving the selector - Kathlyn <-- Please check the name, I dont remember...
+    [X] Fix bug where Command Artifact breaks after game restart - ...
+    [X] Fix bug where Item spawns wherever the last thing was opend (Money Barrel) - Jessica <-- I think...
+        -- Possible fix - Create empty gameobject in CA_Manager to save the location temporary, and delete this once the selection key was pressed!
+        -- Didnt do the fix above. mhh
+    */
+
     [BepInPlugin("dev.felixire.Command_Artifact", "Command_Artifact", "1.3.0")]
     class Command_Artifact : BaseUnityPlugin
     {
@@ -20,10 +35,6 @@ namespace Command_Artifact
         bool _DEBUG = false;
         bool init = false;
         System.Random random;
-
-        static Vector3 chestPos = Vector3.zero;
-        static Vector3 chestForward = Vector3.zero;
-        //Transform chestTransform = null;
 
         CharacterBody characterBody = null;
         Notification masterNotification = null;
@@ -51,9 +62,10 @@ namespace Command_Artifact
 
             for (int i = 0; i < allManagers.Length; i++)
             {
-                //-1 = Error; 0 = Same but not idling; 1 = Same and Idling 2 = Not same
+                //-1 = Error; 0 = Same but not idling; 1 = Same and Idling; 2 = Not same; 3 = Not a chest
                 int check = allManagers[i].PurchaseInteraction_Receiver(self, activator);
-                if (check == 1)
+                Chat.AddMessage("Check: " + check);
+                if (check == 1 || check == 3)
                 {
                     orig.Invoke(self, activator);
                     break;
@@ -67,8 +79,19 @@ namespace Command_Artifact
 
         private void Run_Awake(On.RoR2.Run.orig_Awake orig, Run self)
         {
+            CleanUpLeftovers();
+            orig.Invoke(self);
+
+
+            //SetGlobalTimeScaleV2(config.TimeScaleDefault);
+            Chat.AddMessage("<color=blue>Command Artifact Loaded</color>");
+            init = false;
+        }
+
+        private void CleanUpLeftovers()
+        {
             //Hopefully this runs only once
-            //Try to leftovers
+            //Try to remove leftovers
             try
             {
                 CA_Manager[] allManagers = FindObjectsOfType<CA_Manager>();
@@ -94,10 +117,6 @@ namespace Command_Artifact
 
             masterNotification = null;
             characterBody = null;
-
-            SetGlobalTimeScale(config.TimeScaleDefault);
-            Chat.AddMessage("<color=blue>Command Artifact Loaded</color>");
-            orig.Invoke(self);
         }
 
         private void Run_Update(On.RoR2.Run.orig_Update orig, Run self)
@@ -118,35 +137,30 @@ namespace Command_Artifact
             characterBody = localUser.cachedBody;
 
             //Check if every player has an CA_Manager and check master
-            if (masterNotification == null || PlayerCharacterMasterController.instances.Count != FindObjectsOfType<CA_Manager>().Length)
+            if (masterNotification == null)
             {
-                foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
+                PlayerCharacterMasterController player = PlayerCharacterMasterController.instances[0];
+                if (player.gameObject.GetComponent<CA_Manager>() == null)
                 {
-                    if (player.gameObject.GetComponent<CA_Manager>() == null)
-                    {
-                        CA_Manager manager = player.gameObject.AddComponent<CA_Manager>();
-                        manager.config = this.config;
-                        manager.random = this.random;
-                    }
+                    CA_Manager manager = player.gameObject.AddComponent<CA_Manager>();
+                    manager.config = this.config;
+                    manager.random = this.random;
+                }
 
-                    if (player.gameObject.GetComponent<Notification>() == null)
-                    {
-                        Notification notification;
-                        if (player.gameObject == localUser.cachedMasterController.gameObject)
-                            masterNotification = notification = player.gameObject.AddComponent<Notification>();
-                        else
-                            notification = player.gameObject.AddComponent<Notification>();
+                if (player.gameObject.GetComponent<Notification>() == null)
+                {
+                    Notification notification;
+                    masterNotification = notification = player.gameObject.AddComponent<Notification>();
 
-                        notification.transform.SetParent(player.gameObject.transform);
-                        notification.SetPosition(new Vector3((float)(Screen.width * 50) / 100f, (float)(Screen.height * 50) / 100f, 0f));
-                        notification.SetSize(new Vector2(500, 250));
+                    notification.transform.SetParent(player.gameObject.transform);
+                    notification.SetPosition(new Vector3((float)(Screen.width * 50) / 100f, (float)(Screen.height * 50) / 100f, 0f));
+                    notification.SetSize(new Vector2(500, 250));
 
-                        notification.GetTitle = (() => string.Format("Item Selector. Press {0} to continue", config.SelectButton.ToString()));
+                    notification.GetTitle = (() => string.Format("Item Selector. Press {0} to continue", config.SelectButton.ToString()));
 
-                        notification.GenericNotification.fadeTime = 1f;
-                        notification.GenericNotification.duration = 10000f;
-                        player.gameObject.GetComponent<CA_Manager>().HideSelectMenu();
-                    }
+                    notification.GenericNotification.fadeTime = 1f;
+                    notification.GenericNotification.duration = 10000f;
+                    player.gameObject.GetComponent<CA_Manager>().HideSelectMenu();
                 }
             }
 
@@ -209,22 +223,11 @@ namespace Command_Artifact
             GameObject obj = self.outer.gameObject;
             string name = obj.name.ToLower();
 
-            chestPos = obj.transform.position;
-            chestForward = obj.transform.forward;
-
             if (!name.Contains("chest1") && !name.Contains("chest2") && !name.Contains("goldchest") && !name.Contains("equipmentbarrel") && !name.Contains("isclockbox"))
             {
                 orig.Invoke(self);
                 return;
             }
-        }
-
-        public static void DropItems(PickupIndex item)
-        {
-            //PickupIndex pickupIndex = new PickupIndex(item);
-            //localUser.cachedBody.inventory.GiveItem(item.itemIndex);
-            PickupDropletController.CreatePickupDroplet(item, chestPos + Vector3.up * 1.5f, Vector3.up * 20f + chestForward * 2f);
-            //PickupDropletController.CreatePickupDroplet(pickupIndex, Vector3.zero, Vector3.zero);
         }
 
         //Still Broken as hell
