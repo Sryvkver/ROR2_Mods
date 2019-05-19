@@ -18,22 +18,24 @@ namespace Command_Artifact
     I LITTERALY CANT FIND ANYTHING ANYMORE AHHHH
     [TODO]
     [ ] Fix Multiplayer - litteraly everyone
-        -- maybe just make it so everyone needs the mod and runs the code themselves (this breaks timescale but meh)
-        -- This fixes the issue of fucking trying to share a variable between everyone which is litteraly impossible to do for me
-    [X] Add config for moving the selector - Kathlyn <-- Please check the name, I dont remember...
+        -- Create a gameobject for each charackter (Network.spawn) with some values set
+            Hook the create object so it runs the correct Functions - to return a value create a new object with the value
+        
+    [X] Add config for moving the selector - Katelyn <-- Please check the name, I dont remember...
     [X] Fix bug where Command Artifact breaks after game restart - ...
     [X] Fix bug where Item spawns wherever the last thing was opend (Money Barrel) - Jessica <-- I think...
         -- Possible fix - Create empty gameobject in CA_Manager to save the location temporary, and delete this once the selection key was pressed!
         -- Didnt do the fix above. mhh
     */
 
-    [BepInPlugin("dev.felixire.Command_Artifact", "Command_Artifact", "1.3.0")]
+    [BepInPlugin("dev.felixire.Command_Artifact", "Command_Artifact", "1.3.1")]
     class Command_Artifact : BaseUnityPlugin
     {
         ConfigStuff config = new ConfigStuff();
 
         bool _DEBUG = false;
         bool init = false;
+        bool hooked = false;
         System.Random random;
 
         CharacterBody characterBody = null;
@@ -50,9 +52,6 @@ namespace Command_Artifact
             random = new System.Random(seed);
 
             //Hook needed stuff
-            On.EntityStates.Barrel.Opening.OnEnter += Opening_OnEnter;
-            On.RoR2.PurchaseInteraction.OnInteractionBegin += PurchaseInteraction_OnInteractionBegin;
-            On.RoR2.Run.Update += Run_Update;
             On.RoR2.Run.Awake += Run_Awake;
         }
 
@@ -64,7 +63,7 @@ namespace Command_Artifact
             {
                 //-1 = Error; 0 = Same but not idling; 1 = Same and Idling; 2 = Not same; 3 = Not a chest
                 int check = allManagers[i].PurchaseInteraction_Receiver(self, activator);
-                Chat.AddMessage("Check: " + check);
+                //Chat.AddMessage("Check: " + check);
                 if (check == 1 || check == 3)
                 {
                     orig.Invoke(self, activator);
@@ -81,6 +80,29 @@ namespace Command_Artifact
         {
             CleanUpLeftovers();
             orig.Invoke(self);
+
+            //Dont know wheter or not I am allow to hook everything down here but hey
+            if (!RoR2Application.isInSinglePlayer)
+            {
+                Chat.AddMessage("<color=blue>Command Artifact NOT Loaded</color>");
+                Chat.AddMessage("Command Artifact is currently not supported in multiplayer. Hope you still enjoy it tho ♥");
+                On.EntityStates.Barrel.Opening.OnEnter -= Opening_OnEnter;
+                On.RoR2.PurchaseInteraction.OnInteractionBegin -= PurchaseInteraction_OnInteractionBegin;
+                On.RoR2.Run.Update -= Run_Update;
+                hooked = false;
+                return;
+            }
+            else
+            {
+                if (!hooked)
+                {
+                    On.EntityStates.Barrel.Opening.OnEnter += Opening_OnEnter;
+                    On.RoR2.PurchaseInteraction.OnInteractionBegin += PurchaseInteraction_OnInteractionBegin;
+                    On.RoR2.Run.Update += Run_Update;
+                    hooked = true;
+                }
+            }
+
 
 
             //SetGlobalTimeScaleV2(config.TimeScaleDefault);
@@ -127,7 +149,7 @@ namespace Command_Artifact
             //Debug.Log(string.Format("Player count: {0}; Manager Count: {1}", PlayerCharacterMasterController.instances.Count, FindObjectsOfType<CA_Manager>().Length));
 
 
-            if (!Run.instance || Run.instance.time < 1)
+            if (!Run.instance || Run.instance.time < 1 || !RoR2Application.isInSinglePlayer)
                 return;
 
             LocalUser localUser = LocalUserManager.GetFirstLocalUser();
@@ -152,9 +174,11 @@ namespace Command_Artifact
                     Notification notification;
                     masterNotification = notification = player.gameObject.AddComponent<Notification>();
 
+                    notification.SetItemsIconSize(config.NotiIconSize);
+                    notification.SetItemsInLine(config.NotiItemsInLine);
                     notification.transform.SetParent(player.gameObject.transform);
                     notification.SetPosition(new Vector3((float)(Screen.width * 50) / 100f, (float)(Screen.height * 50) / 100f, 0f));
-                    notification.SetSize(new Vector2(500, 250));
+                    notification.SetSize(new Vector2(config.NotiSizeX, config.NotiSizeY));
 
                     notification.GetTitle = (() => string.Format("Item Selector. Press {0} to continue", config.SelectButton.ToString()));
 

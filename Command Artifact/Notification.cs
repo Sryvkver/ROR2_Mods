@@ -24,6 +24,7 @@ namespace Command_Artifact
         public Transform Parent { get; set; }
 
         public int ItemsInLine = 10;
+        public int ItemIconSize = 50;
 
         public List<IconCA> iconsCA = new List<IconCA>();
 
@@ -48,6 +49,16 @@ namespace Command_Artifact
             }
             typeof(LanguageTextMeshController).GetField("resolvedString", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this.GenericNotification.titleText, this.GetTitle());
             typeof(LanguageTextMeshController).GetMethod("UpdateLabel", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(this.GenericNotification.titleText, new object[0]);
+        }
+
+        public void SetItemsInLine(int count)
+        {
+            ItemsInLine = count;
+        }
+
+        public void SetItemsIconSize(int size)
+        {
+            ItemIconSize = size;
         }
 
         public void SetPosition(Vector3 position)
@@ -116,7 +127,7 @@ namespace Command_Artifact
                     return;
 
                 //GenericNotification.gameObject
-                IconCA icon = new IconCA(item, GenericNotification);
+                IconCA icon = new IconCA(item, GenericNotification, ItemIconSize);
                 iconsCA.Add(icon);
 
                 if (i % ItemsInLine == 0)
@@ -124,8 +135,8 @@ namespace Command_Artifact
                     line++;
                     itemIndex = 0;
                 }
-                int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * 50);
-                int y = (int)(-25 + (-line + 3) * 50);
+                int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * ItemIconSize);
+                int y = (int)(-25 + (-line + 3) * ItemIconSize);
 
                 icon.SetPos(x, y);
             }
@@ -151,7 +162,7 @@ namespace Command_Artifact
                         return;
 
                     //GenericNotification.gameObject
-                    IconCA icon = new IconCA(item, GenericNotification);
+                    IconCA icon = new IconCA(item, GenericNotification, ItemIconSize);
                     iconsCA.Add(icon);
 
                     if (i % ItemsInLine == 0)
@@ -159,8 +170,8 @@ namespace Command_Artifact
                         line++;
                         itemIndex = 0;
                     }
-                    int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * 50);
-                    int y = (int)(-25 + (-line + 3) * 50);
+                    int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * ItemIconSize);
+                    int y = (int)(-25 + (-line + 3) * ItemIconSize);
 
                     icon.SetPos(x, y);
                 }
@@ -174,7 +185,7 @@ namespace Command_Artifact
                         return;
 
                     //GenericNotification.gameObject
-                    IconCA icon = new IconCA(item, GenericNotification);
+                    IconCA icon = new IconCA(item, GenericNotification, ItemIconSize);
                     iconsCA.Add(icon);
 
                     if (i % ItemsInLine == 0)
@@ -182,8 +193,8 @@ namespace Command_Artifact
                         line++;
                         itemIndex = 0;
                     }
-                    int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * 50);
-                    int y = (int)(-25 + (-line + 3) * 50);
+                    int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * ItemIconSize);
+                    int y = (int)(-25 + (-line + 3) * ItemIconSize);
 
                     icon.SetPos(x, y);
                 }
@@ -347,7 +358,7 @@ namespace Command_Artifact
 
             selector.GetComponent<Image>().sprite = shadow;
             selector.transform.position = Vector3.zero;
-            selector.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 50);
+            selector.GetComponent<RectTransform>().sizeDelta = new Vector2(ItemIconSize, ItemIconSize);
 
             return selector;
         }
@@ -361,8 +372,8 @@ namespace Command_Artifact
             int col = itemIndex % ItemsInLine;
             //Chat.AddMessage(line + " - " + col);
 
-            int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + col * 50);
-            int y = (int)(-25 + (-line+2) * 50);
+            int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + col * ItemIconSize);
+            int y = (int)(-25 + (-line+2) * ItemIconSize);
 
             this.selector.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
         }

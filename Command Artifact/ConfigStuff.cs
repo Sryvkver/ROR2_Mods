@@ -27,6 +27,16 @@ namespace Command_Artifact
         private static ConfigWrapper<int> Tier2Percantage_Rusty_Conf { get; set; }
         private static ConfigWrapper<int> Tier3Percantage_Rusty_Conf { get; set; }
 
+        private static ConfigWrapper<int> NotiSizeY_Conf { get; set; }
+        private static ConfigWrapper<int> NotiSizeX_Conf { get; set; }
+
+        private static ConfigWrapper<int> NotiIconSize_Conf { get; set; }
+
+        private static ConfigWrapper<int> NotiPosY_Conf { get; set; }
+        private static ConfigWrapper<int> NotiPosX_Conf { get; set; }
+
+        private static ConfigWrapper<int> NotiItemsInLine_Conf { get; set; }
+
         private static ConfigWrapper<string> TimeScale_Conf { get; set; }
         private static ConfigWrapper<string> TimeScaleDefault_Conf { get; set; }
         private static ConfigWrapper<string> SelectKey_Conf { get; set; }
@@ -37,6 +47,52 @@ namespace Command_Artifact
         private static ConfigWrapper<bool> AllStuff_Conf { get; set; }
         #endregion
 
+        #region public Stuff
+        public int NotiIconSize
+        {
+            get
+            {
+                return NotiIconSize_Conf.Value;
+            }
+            set
+            {
+                NotiIconSize_Conf.Value = value;
+            }
+        }
+
+        public int NotiSizeY
+        {
+            get
+            {
+                return NotiSizeY_Conf.Value;
+            }
+            set
+            {
+                NotiSizeY_Conf.Value = value;
+            }
+        }
+        public int NotiSizeX
+        {
+            get
+            {
+                return NotiSizeX_Conf.Value;
+            }
+            set
+            {
+                NotiSizeX_Conf.Value = value;
+            }
+        }
+        public int NotiItemsInLine
+        {
+            get
+            {
+                return NotiItemsInLine_Conf.Value;
+            }
+            set
+            {
+                NotiItemsInLine_Conf.Value = value;
+            }
+        }
         public float TimeScale
         {
             get
@@ -184,6 +240,7 @@ namespace Command_Artifact
                 MoveRightKey_Conf.Value = value.ToString();
             }
         }
+        #endregion
 
 
         List<ConfigWrapper<int>> configs = new List<ConfigWrapper<int>>();
@@ -201,6 +258,12 @@ namespace Command_Artifact
             MoveRightKey_Conf = Config.Wrap<string>("Commander Artifact", "Right Key", "Which key to use for moving the selector right (Check https://docs.unity3d.com/ScriptReference/KeyCode.html for the names)", "RightArrow");
 
             AllStuff_Conf = Config.Wrap<bool>("Commander Artifact", "Everything avaiable", "Should everything be avaiable, without having it unlocked", false);
+
+
+            NotiIconSize_Conf = Config.Wrap<int>("Notification", "Size", "How big the item icon should be", 50);
+            NotiSizeY_Conf = Config.Wrap<int>("Notification", "Y", "How big the notification is in the Y axis", 250);
+            NotiSizeX_Conf = Config.Wrap<int>("Notification", "X", "How big the notification is in the X axis", 500);
+            NotiItemsInLine_Conf = Config.Wrap<int>("Notification", "Count", "How many Items should be in one line", 10);
 
             //Might have to reverse this, because its reversed in the actual file...
             Tier1Percantage_Normal_Conf = Config.Wrap<int>("Normal Chest", "Tier 1 Percantage", "How likely it is that tier 1 pops up on a Normal chest (0-100)", 80);
