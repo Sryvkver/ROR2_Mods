@@ -24,6 +24,7 @@ namespace Command_Artifact
         public Transform Parent { get; set; }
 
         public int ItemsInLine = 10;
+        public int ItemIconSize = 50;
 
         public List<IconCA> iconsCA = new List<IconCA>();
 
@@ -50,6 +51,16 @@ namespace Command_Artifact
             typeof(LanguageTextMeshController).GetMethod("UpdateLabel", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(this.GenericNotification.titleText, new object[0]);
         }
 
+        public void SetItemsInLine(int count)
+        {
+            ItemsInLine = count;
+        }
+
+        public void SetItemsIconSize(int size)
+        {
+            ItemIconSize = size;
+        }
+
         public void SetPosition(Vector3 position)
         {
             this.RootObject.transform.position = position;
@@ -74,13 +85,124 @@ namespace Command_Artifact
                 Destroy(iconsCA[i]);
             }
             //Remove all Images
-            while(GameObject.Find("Commander_Image") != null)
-            {
-                Destroy(GameObject.Find("Commander_Image"));
-            }
+            //while(GameObject.Find("Commander_Image") != null)
+            //{
+            //    Destroy(GameObject.Find("Commander_Image"));
+            //}
             iconsCA.Clear();
         }
 
+        public void PopulateTier(ItemTier tier, bool allAvaiable)
+        {
+            if (selector == null)
+                selector = createSelector();
+            setSelectorPos(0);
+            //List<ItemIndex> tier1 = ItemCatalog.tier1ItemList;
+            List<ItemIndex> tierItems = getAvaiableItems(tier);
+
+            if (allAvaiable)
+            {
+                switch (tier)
+                {
+                    case ItemTier.Tier1:
+                        tierItems = RoR2.ItemCatalog.tier1ItemList;
+                        break;
+                    case ItemTier.Tier2:
+                        tierItems = RoR2.ItemCatalog.tier2ItemList;
+                        break;
+                    case ItemTier.Tier3:
+                        tierItems = RoR2.ItemCatalog.tier3ItemList;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            int line = 0;
+            int itemIndex = 0;
+            for (int i = 0; i < tierItems.Count; i++)
+            {
+                ItemDef item = ItemCatalog.GetItemDef(tierItems[i]);
+                if (String.IsNullOrEmpty(item.pickupIconPath))
+                    return;
+
+                //GenericNotification.gameObject
+                IconCA icon = new IconCA(item, GenericNotification, ItemIconSize);
+                iconsCA.Add(icon);
+
+                if (i % ItemsInLine == 0)
+                {
+                    line++;
+                    itemIndex = 0;
+                }
+                int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * ItemIconSize);
+                int y = (int)(-25 + (-line + 3) * ItemIconSize);
+
+                icon.SetPos(x, y);
+            }
+        }
+
+        public void PopulateEquipment(bool allAvaiable)
+        {
+            if (selector == null)
+                selector = createSelector();
+            setSelectorPos(0);
+            //List<ItemIndex> tier1 = ItemCatalog.tier1ItemList;
+            List<EquipmentIndex> allEquipments = RoR2.EquipmentCatalog.equipmentList;
+            List<PickupIndex> avaiableEquipment = Run.instance.availableEquipmentDropList;
+
+            int line = 0;
+            int itemIndex = 0;
+            if (allAvaiable)
+            {
+                for (int i = 0; i < allEquipments.Count; i++)
+                {
+                    EquipmentDef item = EquipmentCatalog.GetEquipmentDef(allEquipments[i]);
+                    if (String.IsNullOrEmpty(item.pickupIconPath))
+                        return;
+
+                    //GenericNotification.gameObject
+                    IconCA icon = new IconCA(item, GenericNotification, ItemIconSize);
+                    iconsCA.Add(icon);
+
+                    if (i % ItemsInLine == 0)
+                    {
+                        line++;
+                        itemIndex = 0;
+                    }
+                    int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * ItemIconSize);
+                    int y = (int)(-25 + (-line + 3) * ItemIconSize);
+
+                    icon.SetPos(x, y);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < avaiableEquipment.Count; i++)
+                {
+                    EquipmentDef item = EquipmentCatalog.GetEquipmentDef(avaiableEquipment[i].equipmentIndex);
+                    if (String.IsNullOrEmpty(item.pickupIconPath))
+                        return;
+
+                    //GenericNotification.gameObject
+                    IconCA icon = new IconCA(item, GenericNotification, ItemIconSize);
+                    iconsCA.Add(icon);
+
+                    if (i % ItemsInLine == 0)
+                    {
+                        line++;
+                        itemIndex = 0;
+                    }
+                    int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + itemIndex++ * ItemIconSize);
+                    int y = (int)(-25 + (-line + 3) * ItemIconSize);
+
+                    icon.SetPos(x, y);
+                }
+            }
+
+        }
+
+        /*
         public void PopulateTier1()
         {
             if(selector == null)
@@ -176,10 +298,11 @@ namespace Command_Artifact
                 icon.SetPos(x, y);
             }
         }
-
+        */
         private List<ItemIndex> getAvaiableItems(ItemTier itemTier)
         {
             List<ItemIndex> items = new List<ItemIndex>();
+            
             switch (itemTier)
             {
                 case ItemTier.Tier1:
@@ -235,7 +358,7 @@ namespace Command_Artifact
 
             selector.GetComponent<Image>().sprite = shadow;
             selector.transform.position = Vector3.zero;
-            selector.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 50);
+            selector.GetComponent<RectTransform>().sizeDelta = new Vector2(ItemIconSize, ItemIconSize);
 
             return selector;
         }
@@ -249,8 +372,8 @@ namespace Command_Artifact
             int col = itemIndex % ItemsInLine;
             //Chat.AddMessage(line + " - " + col);
 
-            int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + col * 50);
-            int y = (int)(-25 + (-line+2) * 50);
+            int x = (int)(-GenericNotification.GetComponent<RectTransform>().sizeDelta.x / 2 + 20 + col * ItemIconSize);
+            int y = (int)(-25 + (-line+2) * ItemIconSize);
 
             this.selector.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
         }
