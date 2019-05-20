@@ -13,6 +13,7 @@ namespace KillShop
     class PlayerScript : MonoBehaviour
     {
         public Canvas canvas = RoR2.RoR2Application.instance.mainCanvas;
+        public ConfigHandler config;
 
         public int _kills = 0;
         private UnityAction OnKillsChanged;
@@ -52,7 +53,7 @@ namespace KillShop
         public void AwakeManual()
         {
             shopItems = new ShopItems();
-            shopItems.BuildItemList(ExampleCommandHostCustom);
+            shopItems.BuildItemList(ExampleCommandHostCustom, config);
             SetupGUI();
             SetBuyMenu(false);
         }
@@ -439,7 +440,7 @@ namespace KillShop
             Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 5);
             Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
 
-            scrollbar.direction = Scrollbar.Direction.RightToLeft;
+            scrollbar.direction = Scrollbar.Direction.LeftToRight;
             scrollbar.targetGraphic = handle.GetComponent<Image>();
             scrollbar.handleRect = handle.GetComponent<RectTransform>();
 

@@ -35,7 +35,7 @@ namespace KillShop
             return allItems;
         }
 
-        public void BuildItemList(IRpcAction<Action<NetworkWriter>> ExampleCommandHostCustom)
+        public void BuildItemList(IRpcAction<Action<NetworkWriter>> ExampleCommandHostCustom, ConfigHandler config)
         {
             #region Items
 
@@ -46,7 +46,7 @@ namespace KillShop
                 return 0;
             }, Categories.Tier1, true));
 
-            int Tier1Price = 5;
+            int Tier1Price = config.Tier1_Price;
 
             List<ItemIndex> allTier1Items = ItemCatalog.tier1ItemList;
 
@@ -70,7 +70,7 @@ namespace KillShop
                     });
 
                     int itemIndex = allItems.FindIndex(a => a.Name == name);
-                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * 1.25);
+                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * config.Price_Increase);
                     return 0;
                 }, Categories.Tier1));
             }
@@ -83,7 +83,7 @@ namespace KillShop
                 return 0;
             }, Categories.Tier2, true));
 
-            int Tier2Price = 20;
+            int Tier2Price = config.Tier2_Price;
 
             List<ItemIndex> allTier2Items = ItemCatalog.tier2ItemList;
 
@@ -107,7 +107,7 @@ namespace KillShop
                     });
 
                     int itemIndex = allItems.FindIndex(a => a.Name == name);
-                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * 1.25);
+                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * config.Price_Increase);
                     return 0;
                 }, Categories.Tier2));
             }
@@ -120,7 +120,7 @@ namespace KillShop
                 return 0;
             }, Categories.Tier3, true));
 
-            int Tier3Price = 50;
+            int Tier3Price = config.Tier3_Price;
 
             List<ItemIndex> allTier3Items = ItemCatalog.tier3ItemList;
 
@@ -144,7 +144,7 @@ namespace KillShop
                     });
 
                     int itemIndex = allItems.FindIndex(a => a.Name == name);
-                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * 1.25);
+                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * config.Price_Increase);
                     return 0;
                 }, Categories.Tier3));
             }
@@ -157,7 +157,7 @@ namespace KillShop
                 return 0;
             }, Categories.Lunar, true));
 
-            int LunarItemPrice = 50;
+            int LunarItemPrice = config.Lunar_Price;
 
             List<ItemIndex> allLunarItems = ItemCatalog.lunarItemList;
 
@@ -181,7 +181,7 @@ namespace KillShop
                     });
 
                     int itemIndex = allItems.FindIndex(a => a.Name == name);
-                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * 1.25);
+                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * config.Price_Increase);
                     return 0;
                 }, Categories.Lunar));
             }
@@ -196,7 +196,7 @@ namespace KillShop
                 return 0;
             }, Categories.Equipment, true));
 
-            int EquipmentPrice = 100;
+            int EquipmentPrice = config.Equipment_Price;
 
             List<EquipmentIndex> allEquipment = EquipmentCatalog.equipmentList;
 
@@ -220,7 +220,7 @@ namespace KillShop
                     });
 
                     int itemIndex = allItems.FindIndex(a => a.Name == name);
-                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * 1.25);
+                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * config.Price_Increase);
                     return 0;
                 }, Categories.Equipment));
             }
@@ -247,7 +247,7 @@ namespace KillShop
                 });
 
                 int i = allItems.FindIndex(a => a.Name == "50 XP");
-                allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
+                allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
             }, Categories.Experience));
 
@@ -264,7 +264,7 @@ namespace KillShop
                 });
 
                 int i = allItems.FindIndex(a => a.Name == "250 XP");
-                allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
+                allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
             }, Categories.Experience));
 
@@ -281,7 +281,7 @@ namespace KillShop
                 });
 
                 int i = allItems.FindIndex(a => a.Name == "1K XP");
-                allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
+                allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
             }, Categories.Experience));
 
@@ -298,7 +298,7 @@ namespace KillShop
                 });
 
                 int i = allItems.FindIndex(a => a.Name == "10K XP");
-                allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
+                allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
             }, Categories.Experience));
             #endregion
@@ -323,7 +323,7 @@ namespace KillShop
                 });
 
                 int i = allItems.FindIndex(a => a.Name == "150 Gold");
-                allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
+                allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
             }, Categories.Money));
 
@@ -340,7 +340,7 @@ namespace KillShop
                 });
 
                 int i = allItems.FindIndex(a => a.Name == "500 Gold");
-                allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
+                allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
             }, Categories.Money));
 
@@ -357,7 +357,7 @@ namespace KillShop
                 });
 
                 int i = allItems.FindIndex(a => a.Name == "1K Gold");
-                allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
+                allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
             }, Categories.Money));
 
@@ -374,7 +374,7 @@ namespace KillShop
                 });
 
                 int i = allItems.FindIndex(a => a.Name == "10K Gold");
-                allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
+                allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
             }, Categories.Money));
             #endregion
@@ -397,7 +397,23 @@ namespace KillShop
                 });
 
                 int i = allItems.FindIndex(a => a.Name == "Full HP");
-                allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
+                allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
+                return 0;
+            }));
+
+            allItems.Add(new Item("Full Shield", 10, delegate (PlayerCharacterMasterController player)
+            {
+                //player.body.healthComponent.health = player.body.healthComponent.fullHealth;
+                //player.master.GetBody().healthComponent.health = player.master.GetBody().healthComponent.fullHealth;
+
+                ExampleCommandHostCustom.Invoke(x =>
+                {
+                    x.Write("FullShield");
+                    x.Write(player.gameObject);
+                });
+
+                int i = allItems.FindIndex(a => a.Name == "Full Shield");
+                allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
             }));
             #endregion

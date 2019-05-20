@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Networking;
+using BepInEx.Configuration;
 
 namespace KillShop
 {
@@ -32,13 +33,14 @@ namespace KillShop
          *  - Timer between Purchase (CG Derulo)
          *  - Controller support (CG Derulo)
          *  
-         *  ! - UI tabs along the top instead of dropdowns (CG Derulo)
+         *  [X] UI tabs along the top instead of dropdowns (CG Derulo)
          *  
          *  
          *  -----------------------------
          *              Bugs
          *  -----------------------------
          *  - Soul Counter (Top left) Same color as lunar. 
+         *  - Mouse input not returning to player once the Buy Menu closed
          *  
          *  -----------------------------
          *            Buyables
@@ -61,12 +63,16 @@ namespace KillShop
 
         //private int kills = 0;
         private PlayerCharacterMasterController playerCharacterMaster = null;
+        private ConfigHandler config;
 
         private void Awake()
         {
             On.RoR2.RoR2Application.UnitySystemConsoleRedirector.Redirect += orig => { };
             var miniRpc = MiniRpc.CreateInstance(ModGuid);
             RegisterMiniRpcCMDs(miniRpc);
+
+            config = new ConfigHandler();
+            config.Init(Config);
 
             On.RoR2.Run.Awake += Run_Awake;
             On.RoR2.GlobalEventManager.OnCharacterDeath += GlobalEventManager_OnCharacterDeath;
@@ -254,6 +260,14 @@ namespace KillShop
 
                     playerCharacterMaster.master.GetBody().healthComponent.health = playerCharacterMaster.master.GetBody().healthComponent.fullHealth;
                 }
+
+                if (str == "FullShield")
+                {
+                    GameObject go = x.ReadGameObject();
+                    PlayerCharacterMasterController playerCharacterMaster = go.GetComponent<PlayerCharacterMasterController>();
+
+                    playerCharacterMaster.master.GetBody().healthComponent.shield = playerCharacterMaster.master.GetBody().healthComponent.fullShield;
+                }
             });
 
             // This command will be called by the host, and executed on all clients
@@ -276,6 +290,7 @@ namespace KillShop
                     {
                         this.playerCharacterMaster.gameObject.AddComponent<PlayerScript>();
                         this.playerCharacterMaster.gameObject.GetComponent<PlayerScript>().ExampleCommandHostCustom = this.ExampleCommandHostCustom;
+                        this.playerCharacterMaster.gameObject.GetComponent<PlayerScript>().config = config;
                         this.playerCharacterMaster.gameObject.GetComponent<PlayerScript>().AwakeManual();
                     }
                 }
