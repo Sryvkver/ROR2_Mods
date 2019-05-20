@@ -17,6 +17,36 @@ namespace KillShop
     [BepInPlugin(ModGuid, ModName, ModVer)]
     public class KillShop : BaseUnityPlugin
     {
+        /*  TODO
+         *  -----------------------------
+         *           Features
+         *  -----------------------------
+         *  - Configs
+         *  - Multiple buys at a time (5X, 10X)
+         *  - Unlockables - Unlock tier 3 once you are level 20 or finished 4 Stages
+         *  
+         *  - Menu on Pause Screen (Maxi)
+         *  - Add support for Itemblocker (Maxi)
+         *  - Scale the price with stages (Maxi)
+         *  - Timer between Purchase (CG Derulo)
+         *  - Controller support (CG Derulo)
+         *  
+         *  ! - UI tabs along the top instead of dropdowns (CG Derulo)
+         *  
+         *  
+         *  -----------------------------
+         *              Bugs
+         *  -----------------------------
+         *  - Soul Counter (Top left) Same color as lunar. 
+         *  
+         *  -----------------------------
+         *            Buyables
+         *  -----------------------------
+         *  - Shield recharge (CG Derulo)
+         * 
+         * 
+         */
+
         private const string ModVer = "1.0.0";
         private const string ModName = "KillShop";
         private const string ModGuid = "dev.felixire.KillShop";

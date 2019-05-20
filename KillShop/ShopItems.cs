@@ -22,7 +22,7 @@ namespace KillShop
             Lunar,
             Equipment,
             Money,
-            Expierience,
+            Experience,
             None
         }
         public List<Item> GetCategories()
@@ -232,7 +232,7 @@ namespace KillShop
             allItems.Add(new Item("Exp Categorie", 0, delegate (PlayerCharacterMasterController player)
             {
                 return 0;
-            }, Categories.Expierience, true));
+            }, Categories.Experience, true));
 
             allItems.Add(new Item("50 XP", 10, delegate (PlayerCharacterMasterController player)
             {
@@ -249,7 +249,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "50 XP");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
                 return 0;
-            }, Categories.Expierience));
+            }, Categories.Experience));
 
             allItems.Add(new Item("250 XP", 25, delegate (PlayerCharacterMasterController player)
             {
@@ -266,7 +266,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "250 XP");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
                 return 0;
-            }, Categories.Expierience));
+            }, Categories.Experience));
 
             allItems.Add(new Item("1K XP", 50, delegate (PlayerCharacterMasterController player)
             {
@@ -283,7 +283,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "1K XP");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
                 return 0;
-            }, Categories.Expierience));
+            }, Categories.Experience));
 
             allItems.Add(new Item("10K XP", 400, delegate (PlayerCharacterMasterController player)
             {
@@ -300,7 +300,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "10K XP");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * 1.25);
                 return 0;
-            }, Categories.Expierience));
+            }, Categories.Experience));
             #endregion
 
             #region Gold
@@ -380,6 +380,11 @@ namespace KillShop
             #endregion
 
             #region None
+            allItems.Add(new Item("Undefined Categorie", 0, delegate (PlayerCharacterMasterController player)
+            {
+                return 0;
+            }, Categories.None, true));
+
             allItems.Add(new Item("Full HP", 10, delegate (PlayerCharacterMasterController player)
             {
                 //player.body.healthComponent.health = player.body.healthComponent.fullHealth;

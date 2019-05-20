@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using RoR2;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using R2API;
 using MiniRpcLib.Action;
 using UnityEngine.Networking;
 using RoR2.UI;
-using System.Reflection;
 
 namespace KillShop
 {
@@ -40,12 +37,10 @@ namespace KillShop
         private int widthMenu = 500;
         private int heightMenu = 750;
 
-        private int widthButton = 50;
-        private int heightButton = 50;
-
         public GameObject KillCounter;
         private GameObject BuyMenu;
         private ShopItems shopItems;
+        private Sprite BGTex;
 
         private List<GameObject> allBuyMenuItems = new List<GameObject>();
         public IRpcAction<Action<NetworkWriter>> ExampleCommandHostCustom;
@@ -101,16 +96,23 @@ namespace KillShop
 
         public void SetupGUI()
         {
-            BuyMenu = CreateMainPanel();
             AddKillCounter();
-            GameObject Title = CreateTitle(BuyMenu);
 
-            GameObject ListContainer = CreateContainer(BuyMenu);
+            BuyMenu = CreateBGImage();
+            GameObject Panel = CreateMainPanel(BuyMenu);
+            GameObject Title = CreateTitle(Panel);
+
+            GameObject ListContainer = CreateContainer(Panel, "Element Container", 0);
+            GameObject TabContainer = CreateContainer(Panel, "Tab Container", 1);
 
             GameObject ElementContainer = CreateEleContainer(ListContainer);
             ElementContainer.transform.SetAsFirstSibling();
 
+            GameObject TabEleContainer = CreateTabContainer(TabContainer);
+            TabEleContainer.transform.SetAsFirstSibling();
+
             ListContainer.GetComponent<ScrollRect>().content = ElementContainer.GetComponent<RectTransform>();
+            TabContainer.GetComponent<ScrollRect>().content = TabEleContainer.GetComponent<RectTransform>();
 
             //Name, Icon, function, price, 
             List<Item> allItems = shopItems.GetShopItems();
@@ -121,13 +123,21 @@ namespace KillShop
 
             for (int i = 0; i < allItems.Count; i++)
             {
-                allBuyMenuItems.Add(CreateElement(ElementContainer, allItems[i].Name, allItems[i].Price, allItems[i].Function, i, allItems[i].Categorie, allItems[i].IsFoldOut, allItems[i].Icon));
+                if (allItems[i].IsFoldOut)
+                {
+                    CreateCategory(TabEleContainer, allItems[i].Categorie);
+                }
+                else
+                {
+                    allBuyMenuItems.Add(CreateElement(ElementContainer, allItems[i].Name, allItems[i].Price, allItems[i].Function, i, allItems[i].Categorie, allItems[i].IsFoldOut, allItems[i].Icon));
+                }
+
             }
 
 
             OnKillsChanged += delegate ()
             {
-                Title.GetComponent<Text>().text = "Buy Menu - Kills: " + kills;
+                Title.GetComponent<Text>().text = "Buy Menu - Souls: " + kills;
                 KillCounter.GetComponent<MoneyText>().targetValue = kills;
             };
         }
@@ -189,7 +199,7 @@ namespace KillShop
                 icon.GetComponent<RectTransform>().offsetMax = new Vector2(-50, 0);
                 icon.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 0);
 
-                btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Kills)", name, price);
+                btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Souls)", name, price);
 
                 btn.onClick.AddListener(delegate ()
                 {
@@ -198,7 +208,7 @@ namespace KillShop
 
                     kills -= shopItems.GetShopItems()[index].Price;
                     func(LocalUserManager.GetFirstLocalUser().cachedMasterController);
-                    btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Kills)", name, shopItems.GetShopItems()[index].Price);
+                    btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Souls)", name, shopItems.GetShopItems()[index].Price);
                 });
             }
 
@@ -214,11 +224,70 @@ namespace KillShop
             return Panel;
         }
 
+        private GameObject CreateCategory(GameObject container, ShopItems.Categories categorie)
+        {
+            GameObject Panel = new GameObject("Element"); //Create the GameObject#
+
+            Image img = Panel.AddComponent<Image>();
+            Button btn = Panel.AddComponent<Button>();
+
+            img.color = Color.gray;
+
+            GameObject textObj = new GameObject("Text");
+            textObj.AddComponent<Text>();
+            textObj.GetComponent<RectTransform>().SetParent(btn.GetComponent<RectTransform>());
+            textObj.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0f);
+            textObj.GetComponent<RectTransform>().anchorMax = new Vector2(1, 1f);
+            textObj.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
+            //Left Bottom
+            textObj.GetComponent<RectTransform>().offsetMin = new Vector2(0, 0);
+            //-Right -Top
+            textObj.GetComponent<RectTransform>().offsetMax = new Vector2(0, 0);
+            textObj.GetComponent<Text>().font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+
+            btn.GetComponentInChildren<Text>().color = Color.white;
+            btn.GetComponentInChildren<Text>().alignment = TextAnchor.MiddleCenter;
+            btn.GetComponentInChildren<Text>().text = categorie.ToString();
+
+            /*EventTrigger.Entry entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.PointerClick;
+            entry.callback.AddListener( (eventdata) => { Debug.Log("TEST"); } );
+
+            btn.triggers.Add(entry);*/
+            btn.onClick.AddListener(delegate() 
+            {
+                List<GameObject> gameObjects = allBuyMenuItems.FindAll(x => x.name != categorie.ToString());
+                List<GameObject> gameObjectsOfCategorie = allBuyMenuItems.FindAll(x => x.name == categorie.ToString());
+
+                foreach (GameObject item in gameObjects)
+                {
+                    item.SetActive(false);
+                }
+
+                foreach (GameObject item in gameObjectsOfCategorie)
+                {
+                    item.SetActive(true);
+                }
+            });
+
+            Panel.GetComponent<RectTransform>().SetParent(container.transform);
+            Panel.SetActive(true); //Activate the GameObject
+
+            Panel.AddComponent<LayoutElement>();
+            Panel.GetComponent<LayoutElement>().preferredWidth = 80;
+            Panel.GetComponent<LayoutElement>().flexibleHeight = 1;
+
+
+            Panel.transform.localScale = Vector3.one;
+
+            return Panel;
+        }
+
         private GameObject CreateEleContainer(GameObject listContainer)
         {
             GameObject Panel = new GameObject("ElementContainer"); //Create the GameObject
             Image PanelIMG = Panel.AddComponent<Image>(); //Add the Image Component script
-            PanelIMG.color = new Color(38f / 255f, 37f / 255f, 42f / 255f);
+            PanelIMG.color = Color.clear;
             //PanelIMG.sprite = currentSprite; //Set the Sprite of the Image Component on the new GameObject
             Panel.GetComponent<RectTransform>().SetParent(listContainer.transform); //Assign the newly created Image GameObject as a Child of the Parent Panel.
             Panel.SetActive(true); //Activate the GameObject
@@ -232,61 +301,163 @@ namespace KillShop
             Panel.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             Panel.AddComponent<VerticalLayoutGroup>();
-            Panel.GetComponent<VerticalLayoutGroup>().padding.right = 20;
+            Panel.GetComponent<VerticalLayoutGroup>().padding.right = 8;
             Panel.GetComponent<VerticalLayoutGroup>().spacing = 5;
             Panel.GetComponent<VerticalLayoutGroup>().childControlHeight = true;
             Panel.GetComponent<VerticalLayoutGroup>().childControlWidth = true;
             Panel.GetComponent<VerticalLayoutGroup>().childForceExpandHeight = false;
             Panel.GetComponent<VerticalLayoutGroup>().childForceExpandWidth = false;
 
+            Panel.GetComponent<RectTransform>().localScale = Vector3.one;
+
             return Panel;
         }
 
-        private GameObject CreateContainer(GameObject panel)
+        private GameObject CreateTabContainer(GameObject listContainer)
         {
-            GameObject Panel = new GameObject("Container"); //Create the GameObject
+            GameObject Panel = new GameObject("Tab Element Container"); //Create the GameObject
+            Image PanelIMG = Panel.AddComponent<Image>(); //Add the Image Component script
+            PanelIMG.color = Color.clear;
+            //PanelIMG.sprite = currentSprite; //Set the Sprite of the Image Component on the new GameObject
+            Panel.GetComponent<RectTransform>().SetParent(listContainer.transform); //Assign the newly created Image GameObject as a Child of the Parent Panel.
+            Panel.SetActive(true); //Activate the GameObject
+            Panel.GetComponent<RectTransform>().anchorMin = new Vector2(0f, 0f);
+            Panel.GetComponent<RectTransform>().anchorMax = new Vector2(0f, 1f);
+            Panel.GetComponent<RectTransform>().pivot = new Vector2(0f, .5f);
+
+            Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 655);
+
+            //Left Bottom
+            Panel.GetComponent<RectTransform>().offsetMin = new Vector2(0, 0);
+            //-Right -Top
+            Panel.GetComponent<RectTransform>().offsetMax = new Vector2(-0, -0);
+            //Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 0f);
+
+            Panel.AddComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            Panel.AddComponent<HorizontalLayoutGroup>();
+            Panel.GetComponent<HorizontalLayoutGroup>().padding.top = 5;
+            Panel.GetComponent<HorizontalLayoutGroup>().spacing = 5;
+            Panel.GetComponent<HorizontalLayoutGroup>().childControlHeight = true;
+            Panel.GetComponent<HorizontalLayoutGroup>().childControlWidth = true;
+            Panel.GetComponent<HorizontalLayoutGroup>().childForceExpandHeight = false;
+            Panel.GetComponent<HorizontalLayoutGroup>().childForceExpandWidth = false;
+
+            Panel.GetComponent<RectTransform>().localScale = Vector3.one;
+
+            return Panel;
+        }
+
+        private GameObject CreateContainer(GameObject panel, string name, int type)
+        {
+            GameObject Panel = new GameObject(name); //Create the GameObject
             Image PanelIMG = Panel.AddComponent<Image>(); //Add the Image Component script
                                                           //PanelIMG.sprite = currentSprite; //Set the Sprite of the Image Component on the new GameObject
             Panel.GetComponent<RectTransform>().SetParent(panel.transform); //Assign the newly created Image GameObject as a Child of the Parent Panel.
             Panel.SetActive(true); //Activate the GameObject
-            Panel.GetComponent<RectTransform>().anchorMax = new Vector2(.5f, .5f);
-            Panel.GetComponent<RectTransform>().anchorMin = new Vector2(.5f, .5f);
-            Panel.GetComponent<RectTransform>().pivot = new Vector2(.5f, .5f);
-            Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(500, 736.5f);
-            Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, -25f);
 
             Panel.AddComponent<Mask>();
+            Panel.GetComponent<Mask>().showMaskGraphic = false;
 
-            GameObject scrollbar = CreateScrollbar(Panel);
-            Panel.AddComponent<ScrollRect>().verticalScrollbar = scrollbar.GetComponent<Scrollbar>();
-            Panel.GetComponent<ScrollRect>().horizontal = false;
-            Panel.GetComponent<ScrollRect>().vertical = true;
+            if (type == 0)
+            {
+                Panel.GetComponent<RectTransform>().anchorMax = new Vector2(.5f, .5f);
+                Panel.GetComponent<RectTransform>().anchorMin = new Vector2(.5f, .5f);
+                Panel.GetComponent<RectTransform>().pivot = new Vector2(.5f, .5f);
+                Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(500, 687f);
+                Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, -31f);
+
+                GameObject scrollbar = CreateScrollbarVert(Panel);
+                Panel.AddComponent<ScrollRect>().verticalScrollbar = scrollbar.GetComponent<Scrollbar>();
+                Panel.GetComponent<ScrollRect>().horizontal = false;
+                Panel.GetComponent<ScrollRect>().vertical = true;
+            }
+            else
+            {
+                Panel.GetComponent<RectTransform>().anchorMin = new Vector2(0f, 1f);
+                Panel.GetComponent<RectTransform>().anchorMax = new Vector2(1f, 1f);
+                Panel.GetComponent<RectTransform>().pivot = new Vector2(.5f, 1f);
+                Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 25f);
+                Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, -37f);
+
+                GameObject scrollbar = CreateScrollbarHorz(Panel);
+                Panel.AddComponent<ScrollRect>().horizontalScrollbar = scrollbar.GetComponent<Scrollbar>();
+                Panel.GetComponent<ScrollRect>().horizontal = true;
+                Panel.GetComponent<ScrollRect>().vertical = false;
+            }
+
             Panel.GetComponent<ScrollRect>().movementType = ScrollRect.MovementType.Clamped;
             Panel.GetComponent<ScrollRect>().scrollSensitivity = 10;
+
+            Panel.GetComponent<RectTransform>().localScale = Vector3.one;
 
             return Panel;
         }
 
-        private GameObject CreateScrollbar(GameObject Container)
+        private GameObject CreateScrollbarHorz(GameObject Container)
         {
             GameObject Panel = new GameObject("Scrollbar"); //Create the GameObject
             Scrollbar scrollbar = Panel.AddComponent<Scrollbar>();
             Panel.GetComponent<RectTransform>().SetParent(Container.transform); //Assign the newly created Image GameObject as a Child of the Parent Panel.
             Panel.SetActive(true); //Activate the GameObject
 
-            GameObject slidingArea = CreateSlidingArea(Panel);
-            slidingArea.AddComponent<RectTransform>();
+            GameObject handle = CreateSlidingArea(Panel);
+            handle.AddComponent<RectTransform>();
+
+            Panel.GetComponent<RectTransform>().anchorMin = new Vector2(0f, 1f);
+            Panel.GetComponent<RectTransform>().anchorMax = new Vector2(1f, 1f);
+            Panel.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
+
+            Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 5);
+            Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+
+            scrollbar.direction = Scrollbar.Direction.RightToLeft;
+            scrollbar.targetGraphic = handle.GetComponent<Image>();
+            scrollbar.handleRect = handle.GetComponent<RectTransform>();
+
+            ColorBlock colors = new ColorBlock();
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(209, 209, 209);
+            colors.pressedColor = new Color(209, 209, 209);
+            colors.colorMultiplier = 1;
+
+            scrollbar.colors = colors;
+
+            Panel.GetComponent<RectTransform>().localScale = Vector3.one;
+
+            return Panel;
+        }
+
+        private GameObject CreateScrollbarVert(GameObject Container)
+        {
+            GameObject Panel = new GameObject("Scrollbar"); //Create the GameObject
+            Scrollbar scrollbar = Panel.AddComponent<Scrollbar>();
+            Panel.GetComponent<RectTransform>().SetParent(Container.transform); //Assign the newly created Image GameObject as a Child of the Parent Panel.
+            Panel.SetActive(true); //Activate the GameObject
+
+            GameObject handle = CreateSlidingArea(Panel);
+            handle.AddComponent<RectTransform>();
 
             Panel.GetComponent<RectTransform>().anchorMin = new Vector2(1f, 0f);
             Panel.GetComponent<RectTransform>().anchorMax = new Vector2(1f, 1f);
-            Panel.GetComponent<RectTransform>().pivot = new Vector2(1f, .5f);
+            Panel.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
 
-            Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(20, 0);
-            Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(5, 0);
+            Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(-2.5f, 0);
 
             scrollbar.direction = Scrollbar.Direction.BottomToTop;
-            scrollbar.targetGraphic = slidingArea.GetComponent<Image>();
-            scrollbar.handleRect = slidingArea.GetComponent<RectTransform>();
+            scrollbar.targetGraphic = handle.GetComponent<Image>();
+            scrollbar.handleRect = handle.GetComponent<RectTransform>();
+
+            ColorBlock colors = new ColorBlock();
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(209, 209, 209);
+            colors.pressedColor = new Color(209, 209, 209);
+            colors.colorMultiplier = 1;
+
+            scrollbar.colors = colors;
+
+            Panel.GetComponent<RectTransform>().localScale = Vector3.one;
 
             return Panel;
         }
@@ -308,6 +479,8 @@ namespace KillShop
 
             GameObject Handle = CreateHandle(Panel);
 
+            Panel.GetComponent<RectTransform>().localScale = Vector3.one;
+
             return Handle;
         }
 
@@ -327,7 +500,10 @@ namespace KillShop
             Panel.GetComponent<RectTransform>().offsetMax = new Vector2(10, 10);
 
             Panel.AddComponent<Image>();
-            Panel.GetComponent<Image>().color = Color.gray;
+            Panel.GetComponent<Image>().sprite = null;
+            Panel.GetComponent<Image>().color = Color.white;
+
+            Panel.GetComponent<RectTransform>().localScale = Vector3.one;
 
             return Panel;
         }
@@ -348,6 +524,9 @@ namespace KillShop
             FlashPanel KillCounterFlash = KillCounterContainer.GetComponent<FlashPanel>();
             KillCounterFlash.flashRectTransform.GetComponent<Image>().color = Color.cyan;
 
+            BGTex = Instantiate<Sprite>(Hud.lunarCoinContainer.transform.parent.GetComponent<Image>().sprite);
+            DontDestroyOnLoad(BGTex);
+
             return KillCounterText.gameObject;
         }
 
@@ -360,28 +539,57 @@ namespace KillShop
             TextObj.SetActive(true); //Activate the GameObject
             TextObj.GetComponent<RectTransform>().anchorMin = new Vector2(0f, 1f);
             TextObj.GetComponent<RectTransform>().anchorMax = new Vector2(1f, 1f);
-            TextObj.GetComponent<RectTransform>().pivot = new Vector2(.5f, .5f);
+            TextObj.GetComponent<RectTransform>().pivot = new Vector2(.5f, 1f);
 
             TextObj.GetComponent<RectTransform>().offsetMin = new Vector2(0, TextObj.GetComponent<RectTransform>().offsetMin.y);
             TextObj.GetComponent<RectTransform>().offsetMax = new Vector2(-0, TextObj.GetComponent<RectTransform>().offsetMax.y);
-            TextObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, -13.5f);
+            TextObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 25);
+
+            TextObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 0f);
 
             TextObj.GetComponent<Text>().font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             TextObj.GetComponent<Text>().fontSize = 20;
             TextObj.GetComponent<Text>().color = Color.white;
 
-            TextObj.GetComponent<Text>().text = "Buy Menu - Kills: " + kills;
+            TextObj.GetComponent<Text>().text = "Buy Menu - Souls: " + kills;
 
             TextObj.GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
+
+            TextObj.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
 
             return TextObj;
         }
 
-        private GameObject CreateMainPanel()
+        private GameObject CreateMainPanel(GameObject BG)
         {
             GameObject Panel = new GameObject("Main Panel"); //Create the GameObject
+                                                             //PanelIMG.sprite = currentSprite; //Set the Sprite of the Image Component on the new GameObject
+                                                             //Panel.AddComponent<RectTransform>();
+            Panel.AddComponent<Image>();
+            Panel.GetComponent<Image>().color = new Color(38f / 255f, 37f / 255f, 42f / 255f, 32f / 255f);
+            Panel.GetComponent<RectTransform>().SetParent(BG.transform); //Assign the newly created Image GameObject as a Child of the Parent Panel.
+            Panel.SetActive(true); //Activate the GameObject
+            Panel.GetComponent<RectTransform>().anchorMin = new Vector2(0f, 0f);
+            Panel.GetComponent<RectTransform>().anchorMax = new Vector2(1f, 1f);
+            Panel.GetComponent<RectTransform>().pivot = new Vector2(.5f, .5f);
+            Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 0f);
+            //Left Bottom
+            Panel.GetComponent<RectTransform>().offsetMin = new Vector2(0, 0);
+            //-Right -Top
+            Panel.GetComponent<RectTransform>().offsetMax = new Vector2(-0, -0);
+
+            Panel.GetComponent<RectTransform>().localScale = new Vector3(.989f, .994f, 1);
+
+            return Panel;
+        }
+
+        private GameObject CreateBGImage()
+        {
+            GameObject Panel = new GameObject("Killcounter BG Image"); //Create the GameObject
             Image PanelIMG = Panel.AddComponent<Image>(); //Add the Image Component script
-            PanelIMG.color = new Color(38f / 255f, 37f / 255f, 42f / 255f);
+            PanelIMG.sprite = BGTex;
+            PanelIMG.type = Image.Type.Sliced;
+            PanelIMG.fillCenter = true;
             //PanelIMG.sprite = currentSprite; //Set the Sprite of the Image Component on the new GameObject
             Panel.GetComponent<RectTransform>().SetParent(canvas.transform); //Assign the newly created Image GameObject as a Child of the Parent Panel.
             Panel.SetActive(true); //Activate the GameObject
