@@ -41,8 +41,11 @@ namespace KillShop
         private GameObject BuyMenu;
         private ShopItems shopItems;
         private Sprite BGTex;
+        private Color buyable = new Color(100f / 255f, 200f / 255f, 50f / 255f, 191f / 255f);
+        private Color notBuyable = new Color(200f / 255f, 50f / 255f, 100f / 255f, 191f / 255f);
 
         private List<GameObject> allBuyMenuItems = new List<GameObject>();
+        private List<GameObject> allBuyMenuCategories = new List<GameObject>();
         public IRpcAction<Action<NetworkWriter>> ExampleCommandHostCustom;
 
 
@@ -125,11 +128,13 @@ namespace KillShop
             {
                 if (allItems[i].IsFoldOut)
                 {
-                    CreateCategory(TabEleContainer, allItems[i].Categorie);
+                    allBuyMenuCategories.Add(CreateCategory(TabEleContainer, allItems[i].Categorie));
                 }
                 else
                 {
                     allBuyMenuItems.Add(CreateElement(ElementContainer, allItems[i].Name, allItems[i].Price, allItems[i].Function, i, allItems[i].Categorie, allItems[i].IsFoldOut, allItems[i].Icon));
+                    //Disable all items at start
+                    allBuyMenuItems[allBuyMenuItems.Count-1].SetActive(false);
                 }
 
             }
@@ -149,7 +154,7 @@ namespace KillShop
             Image img = Panel.AddComponent<Image>();
             Button btn = Panel.AddComponent<Button>();
 
-            img.color = Color.gray;
+            img.color = notBuyable;
 
             GameObject textObj = new GameObject("Text");
             textObj.AddComponent<Text>();
@@ -206,10 +211,27 @@ namespace KillShop
                     if (shopItems.GetShopItems()[index].Price > kills)
                         return;
 
-                    kills -= shopItems.GetShopItems()[index].Price;
+                    //Save the Price
+                    int oldPrice = shopItems.GetShopItems()[index].Price;
+                    //Call the function (Updates the price)
                     func(LocalUserManager.GetFirstLocalUser().cachedMasterController);
+                    //Deduct the souls
+                    kills -= oldPrice;
+                    //Update the text
                     btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Souls)", name, shopItems.GetShopItems()[index].Price);
                 });
+
+                OnKillsChanged += delegate ()
+                {
+                    if(shopItems.GetShopItems()[index].Price > kills)
+                    {
+                        img.color = notBuyable;
+                    }
+                    else
+                    {
+                        img.color = buyable;
+                    }
+                };
             }
 
 
@@ -231,7 +253,7 @@ namespace KillShop
             Image img = Panel.AddComponent<Image>();
             Button btn = Panel.AddComponent<Button>();
 
-            img.color = Color.gray;
+            img.color = notBuyable;
 
             GameObject textObj = new GameObject("Text");
             textObj.AddComponent<Text>();
@@ -268,6 +290,12 @@ namespace KillShop
                 {
                     item.SetActive(true);
                 }
+
+                foreach (GameObject item in allBuyMenuCategories)
+                {
+                    item.GetComponent<Image>().color = notBuyable;
+                }
+                img.color = buyable;
             });
 
             Panel.GetComponent<RectTransform>().SetParent(container.transform);

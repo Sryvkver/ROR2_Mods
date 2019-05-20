@@ -24,6 +24,7 @@ namespace KillShop
          *  - Configs
          *  - Multiple buys at a time (5X, 10X)
          *  - Unlockables - Unlock tier 3 once you are level 20 or finished 4 Stages
+         *  - Make it possible to add custom Items
          *  
          *  - Menu on Pause Screen (Maxi)
          *  - Add support for Itemblocker (Maxi)
