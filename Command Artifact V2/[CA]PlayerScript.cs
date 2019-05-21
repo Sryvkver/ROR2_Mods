@@ -69,6 +69,7 @@ namespace Command_Artifact_V2
         */
         public void AddTierToGUI(int Tier, Transform transform)
         {
+            //Remove any old Items
             ClearGUI();
 
             string type = "Item";

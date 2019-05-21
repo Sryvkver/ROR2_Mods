@@ -165,6 +165,7 @@ namespace Command_Artifact_V2
             string name = obj.name.ToLower();
 
             Debug.Log(name);
+            //If the opened object is a supported chest drop the orig call, thus stopping the Items to drop
             if (!name.Contains("chest1") && !name.Contains("chest2") && !name.Contains("goldchest") && !name.Contains("equipmentbarrel") && !name.Contains("isclockbox"))
             {
                 orig.Invoke(self);
@@ -229,6 +230,7 @@ namespace Command_Artifact_V2
         private float[] NormalizeValues(float[] floats)
         {
             float[] normalizedValues = floats;
+            //Get Sum of all values
             float sum = floats[0] + floats[1] + floats[2];
             for (int i = 0; i < 3; i++)
             {
@@ -341,10 +343,11 @@ namespace Command_Artifact_V2
                 if (str == "Reset")
                 {
                     playerCharacterMaster = null;
-                    //kills = 0;
+                    //Get the local player
                     if (this.playerCharacterMaster == null)
                         this.playerCharacterMaster = LocalUserManager.GetFirstLocalUser().cachedMasterController;
 
+                    //If the local player isnt setup yet, set him up
                     if (this.playerCharacterMaster.GetComponent<CA_PlayerScript>() == null)
                     {
                         this.playerCharacterMaster.gameObject.AddComponent<CA_PlayerScript>();
@@ -356,13 +359,14 @@ namespace Command_Artifact_V2
 
                 if (str == "Chest")
                 {
+                    //Get transfered variables
                     GameObject interactor = x.ReadGameObject();
                     Transform transform = x.ReadTransform();
                     double tier = x.ReadDouble();
 
                     CA_PlayerScript playerScript = this.playerCharacterMaster.gameObject.GetComponent<CA_PlayerScript>();
 
-                    Debug.Log(playerScript != null);
+                    //Check the player that opened the chest is correctly setup
                     if (!playerScript)
                         return;
 
@@ -370,10 +374,11 @@ namespace Command_Artifact_V2
                     GameObject thisGO = this.playerCharacterMaster.master.GetBody().gameObject;
 
 
-                    Debug.Log(activator == thisGO);
+                    //Check if this local player is the one that opened the chest
                     if (activator != thisGO)
                         return;
 
+                    //Add the items to the UI and Unhide the SelectMenu
                     playerScript.AddTierToGUI((int)tier, transform);
                     playerScript.SetBuyMenu(true);
 
