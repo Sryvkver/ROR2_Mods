@@ -50,7 +50,7 @@ namespace KillShop
          * 
          */
 
-        private const string ModVer = "1.0.0";
+        private const string ModVer = "1.0.3";
         private const string ModName = "KillShop";
         private const string ModGuid = "dev.felixire.KillShop";
 

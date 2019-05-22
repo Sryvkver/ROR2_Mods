@@ -13,7 +13,7 @@
       <HintPath>..\libs\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="MiniRpcLib">
-      <HintPath>..\libs\MiniRpcLib - Wildbook.dll</HintPath>
+      <HintPath>..\libs\MiniRpcLib.dll</HintPath>
     </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp">
       <HintPath>..\libs\MMHOOK_Assembly-CSharp.dll</HintPath>

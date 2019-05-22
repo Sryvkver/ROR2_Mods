@@ -19,7 +19,7 @@ namespace Command_Artifact_V2
     [BepInPlugin(ModGuid, ModName, ModVer)]
     public class Main : BaseUnityPlugin
     {
-        private const string ModVer = "1.4.0";
+        private const string ModVer = "1.4.1";
         private const string ModName = "Command_Artifact";
         private const string ModGuid = "dev.felixire.Command_Artifact";
 
@@ -251,7 +251,7 @@ namespace Command_Artifact_V2
                 {
                     float unNormalized = floats[i];
                     float normalized = (100 / sum * unNormalized);
-                    floats[i] = normalized;
+                    normalizedValues[i] = normalized;
                 }
             }
 
