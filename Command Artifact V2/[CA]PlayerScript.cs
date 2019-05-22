@@ -14,12 +14,15 @@ namespace Command_Artifact_V2
     {
         public IRpcAction<Action<NetworkWriter>> ExampleCommandHostCustom;
         public Canvas canvas = RoR2.RoR2Application.instance.mainCanvas;
+        //Used for Client Specific Stuff (Size, Colors...)
+        public ConfigHandler config;
+        public bool Everything_Avaiable = false;
         public bool isChestOpening = false;
 
         private Sprite BGTex;
         private GameObject BuyMenu;
         private bool showBuyMenu;
-        private Color buyable = new Color(100f / 255f, 200f / 255f, 50f / 255f, 191f / 255f);
+        private Color buyable = new Color(38f / 255f, 37f / 255f, 42f / 255f, 185f / 255f);
         private GameObject ElementContainer;
 
         public void AwakeManual()
@@ -80,7 +83,7 @@ namespace Command_Artifact_V2
             switch (Tier)
             {
                 case 1:
-                    if (false)
+                    if (!config.Everything_Avaiable)
                     {
                         itemsToAdd = Run.instance.availableTier1DropList;
                     }
@@ -94,7 +97,7 @@ namespace Command_Artifact_V2
                     }
                     break;
                 case 2:
-                    if (false)
+                    if (!config.Everything_Avaiable)
                     {
                         itemsToAdd = Run.instance.availableTier2DropList;
                     }
@@ -108,7 +111,7 @@ namespace Command_Artifact_V2
                     }
                     break;
                 case 3:
-                    if (false)
+                    if (!config.Everything_Avaiable)
                     {
                         itemsToAdd = Run.instance.availableTier3DropList;
                     }
@@ -128,7 +131,7 @@ namespace Command_Artifact_V2
                 case 6:
                     type = "Equipment";
 
-                    if (false)
+                    if (!config.Everything_Avaiable)
                     {
                         itemsToAdd = Run.instance.availableEquipmentDropList;
                         List<PickupIndex> lunarItems = itemsToAdd.FindAll(x => x.IsLunar());

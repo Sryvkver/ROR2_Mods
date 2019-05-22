@@ -19,15 +19,17 @@ namespace Command_Artifact_V2
     [BepInPlugin(ModGuid, ModName, ModVer)]
     public class Main : BaseUnityPlugin
     {
-        private const string ModVer = "1.0.0";
-        private const string ModName = "Command Artifact";
-        private const string ModGuid = "dev.felixire.CommandArtifact";
+        private const string ModVer = "1.4.0";
+        private const string ModName = "Command_Artifact";
+        private const string ModGuid = "dev.felixire.Command_Artifact";
 
         public IRpcAction<Action<NetworkWriter>> ExampleCommandHostCustom { get; set; }
         public IRpcAction<Action<NetworkWriter>> ExampleCommandClientCustom { get; set; }
         public IRpcFunc<GameObject, int> ExampleFuncClient { get; set; }
 
         private PlayerCharacterMasterController playerCharacterMaster = null;
+        private ConfigHandler config;
+        //Not allow to set this to Private :/ Really Annoying me...
         System.Random random;
 
         private void Awake()
@@ -35,6 +37,9 @@ namespace Command_Artifact_V2
             On.RoR2.RoR2Application.UnitySystemConsoleRedirector.Redirect += orig => { };
             var miniRpc = MiniRpc.CreateInstance(ModGuid);
             RegisterMiniRpcCMDs(miniRpc);
+
+            config = new ConfigHandler();
+            config.Init(Config);
 
             var epochStart = new System.DateTime(1970, 1, 1, 8, 0, 0, System.DateTimeKind.Utc);
             int seed = (int)((System.DateTime.UtcNow - epochStart).TotalSeconds / 2);
@@ -82,6 +87,8 @@ namespace Command_Artifact_V2
             ExampleCommandClientCustom.Invoke(x =>
             {
                 x.Write("Reset");
+                //Send this to every client so its host dependend
+                x.Write(config.Everything_Avaiable);
             });
 
             //Hook host specific stuff
@@ -141,8 +148,11 @@ namespace Command_Artifact_V2
                 {
                     // RNG Value was above specified percantage values
                     // Cancel the drop
-                    if (tier == 0)
+                    /*if (tier == 0)
+                    {
+                        Debug.Log("Mhh Unlucky you found nothing in this Chest.");
                         return;
+                    }*/
 
                     //Signal the server that a chest has been opened
                     //Give the player that opend it and the chest position
@@ -187,20 +197,19 @@ namespace Command_Artifact_V2
 
             float[] percantages = { 80, 20, 1 };
 
-            // !TODO add config here
             switch (ChestType)
             {
                 case 0:
-                    percantages = new float[3] { 100, 0, 0 };
+                    percantages = config.Normal_Chest_Percantages;
                     break;
                 case 1:
-                    percantages = new float[3] { 0, 100, 0 };
+                    percantages = config.Large_Chest_Percantages;
                     break;
                 case 2:
-                    percantages = new float[3] { 0, 0, 100 };
+                    percantages = config.Golden_Chest_Percantages;
                     break;
                 case 3:
-                    percantages = new float[3] { 80, 20, 1 };
+                    percantages = config.Rusty_Chest_Percantages;
                     break;
 
                 default:
@@ -280,20 +289,26 @@ namespace Command_Artifact_V2
                         }
                     }
 
+                    //Didnt work with Boolean ...
                     var doubleVal = x.ReadDouble();
 
+                    //Workaround
                     bool state = doubleVal == 0.0 ? false : true;
 
                     AllBuyMenuStates[id] = state;
 
+                    //Check if any one has the select menu open
                     int check = AllBuyMenuStates.FindAll(a => a == true).Count;
                     Debug.Log(check);
+                    //If at least one has it opened set the Timescale to the config one
+                    //Else set it back to 1.0
                     if (check > 0)
                     {
                         ExampleCommandClientCustom.Invoke(y =>
                         {
                             y.Write("Timescale");
-                            y.Write(.25);
+                            //Convert to double
+                            y.Write((double)config.TimeScale);
                         });
                     }
                     else
@@ -342,6 +357,9 @@ namespace Command_Artifact_V2
 
                 if (str == "Reset")
                 {
+                    bool everything_Avaiable = x.ReadBoolean();
+                    Debug.Log("BOOL TEST:" + everything_Avaiable);
+
                     playerCharacterMaster = null;
                     //Get the local player
                     if (this.playerCharacterMaster == null)
@@ -352,7 +370,8 @@ namespace Command_Artifact_V2
                     {
                         this.playerCharacterMaster.gameObject.AddComponent<CA_PlayerScript>();
                         this.playerCharacterMaster.gameObject.GetComponent<CA_PlayerScript>().ExampleCommandHostCustom = this.ExampleCommandHostCustom;
-                        //this.playerCharacterMaster.gameObject.GetComponent<PlayerScript>().config = config;
+                        this.playerCharacterMaster.gameObject.GetComponent<CA_PlayerScript>().config = config;
+                        this.playerCharacterMaster.gameObject.GetComponent<CA_PlayerScript>().Everything_Avaiable = everything_Avaiable;
                         this.playerCharacterMaster.gameObject.GetComponent<CA_PlayerScript>().AwakeManual();
                     }
                 }
@@ -377,6 +396,14 @@ namespace Command_Artifact_V2
                     //Check if this local player is the one that opened the chest
                     if (activator != thisGO)
                         return;
+
+                    // RNG Value was above specified percantage values
+                    // Cancel the drop
+                    if ((int) tier == 0)
+                    {
+                        Chat.AddMessage("Mhh Unlucky you found nothing in this Chest.");
+                        return;
+                    }
 
                     //Add the items to the UI and Unhide the SelectMenu
                     playerScript.AddTierToGUI((int)tier, transform);
