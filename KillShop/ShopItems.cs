@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Networking;
 using static KillShop.ShopItems;
 
@@ -428,6 +429,7 @@ namespace KillShop
         public Categories Categorie;
         public Sprite Icon; //Resources.Load<Sprite>(itemDef.pickupIconPath);
         public Func<PlayerCharacterMasterController, int> Function;
+        public UnityAction OnBought;
 
         public Item(string name, int price, Sprite icon, Func<PlayerCharacterMasterController, int> func, Categories categorie = Categories.None, bool isFoldout = false)
         {
