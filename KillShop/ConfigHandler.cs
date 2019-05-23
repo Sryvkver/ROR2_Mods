@@ -14,7 +14,10 @@ namespace KillShop
         private static ConfigWrapper<int> Tier3_Price_Conf { get; set; }
         private static ConfigWrapper<int> LunarItem_Price_Conf { get; set; }
         private static ConfigWrapper<int> Equipment_Price_Conf { get; set; }
+        private static ConfigWrapper<int> Boss_KillCount_Conf { get; set; }
+        private static ConfigWrapper<int> Elite_KillCount_Conf { get; set; }
         private static ConfigWrapper<string> Price_Increase_Conf { get; set; }
+
         #endregion
 
         #region publics
@@ -78,6 +81,30 @@ namespace KillShop
             }
         }
 
+        public int Boss_KillCount
+        {
+            get
+            {
+                return Boss_KillCount_Conf.Value;
+            }
+            set
+            {
+                Boss_KillCount_Conf.Value = value;
+            }
+        }
+
+        public int Elite_KillCount
+        {
+            get
+            {
+                return Elite_KillCount_Conf.Value;
+            }
+            set
+            {
+                Elite_KillCount_Conf.Value = value;
+            }
+        }
+
         public float Price_Increase
         {
             get
@@ -107,6 +134,9 @@ namespace KillShop
             LunarItem_Price_Conf = Config.Wrap<int>("Prices", "Lunar", "How much should a Lunar Item cost?", 50);
             Equipment_Price_Conf = Config.Wrap<int>("Prices", "Equipment", "How much should Equipment cost?", 100);
             Price_Increase_Conf = Config.Wrap<string>("Prices", "Price_Increase", "How much should the Price increase with each Purchase?", "1.25");
+
+            Boss_KillCount_Conf = Config.Wrap<int>("General", "Boss_Killcount", "How many souls should a Boss monster add?", 5);
+            Elite_KillCount_Conf = Config.Wrap<int>("General", "Elite_Killcount", "How many souls should a Elite monster add?", 2);
         }
     }
 }

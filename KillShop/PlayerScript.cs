@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using MiniRpcLib.Action;
 using UnityEngine.Networking;
 using RoR2.UI;
+using UnityEngine.EventSystems;
 
 namespace KillShop
 {
@@ -85,10 +86,10 @@ namespace KillShop
                 ToggleCursor();
             }
 
-            if (Input.GetKeyDown(KeyCode.Alpha0))
+            /*if (Input.GetKeyDown(KeyCode.Alpha0))
             {
                 kills += 100;
-            }
+            }*/
         }
 
         public int ToggleCursor()
@@ -104,6 +105,10 @@ namespace KillShop
 
             BuyMenu = CreateBGImage();
             GameObject Panel = CreateMainPanel(BuyMenu);
+            GameObject DescriptionPanel = CreateDescriptionPanel(BuyMenu);
+            GameObject DescriptionImage = CreateDescriptionImage(DescriptionPanel);
+            GameObject DescriptionText = CreateDescriptionText(DescriptionImage);
+            DescriptionPanel.SetActive(false);
             GameObject Title = CreateTitle(Panel);
 
             GameObject ListContainer = CreateContainer(Panel, "Element Container", 0);
@@ -133,7 +138,7 @@ namespace KillShop
                 }
                 else
                 {
-                    allBuyMenuItems.Add(CreateElement(ElementContainer, allItems[i].Name, allItems[i].Price, allItems[i].Function, i, allItems[i].Categorie, allItems[i].IsFoldOut, allItems[i].Icon, allItems[i].Description));
+                    allBuyMenuItems.Add(CreateElement(ElementContainer, DescriptionPanel, allItems[i].Name, allItems[i].Price, allItems[i].Function, i, allItems[i].Categorie, allItems[i].IsFoldOut, allItems[i].Icon, allItems[i].Description));
                     //Disable all items at start
                     allBuyMenuItems[allBuyMenuItems.Count-1].SetActive(false);
                 }
@@ -148,11 +153,16 @@ namespace KillShop
             };
         }
 
-        private GameObject CreateElement(GameObject container, string name, int price, Func<PlayerCharacterMasterController, int> func, int index, ShopItems.Categories categorie, bool isFoldout, Sprite itemIcon = null, string description = null)
+        private GameObject CreateElement(GameObject container, GameObject descriptionOBJ, string name, int price, Func<PlayerCharacterMasterController, int> func, int index, ShopItems.Categories categorie, bool isFoldout, Sprite itemIcon = null, string description = null)
         {
             GameObject Empty = new GameObject("ElementHolder");
             Empty.AddComponent<RectTransform>();
             Empty.name = categorie.ToString();
+
+            Empty.AddComponent<ItemOnHover>();
+            Empty.GetComponent<ItemOnHover>().descriptionOBJ = descriptionOBJ;
+            Empty.GetComponent<ItemOnHover>().description = description;
+
             GameObject Panel = new GameObject("Element"); //Create the GameObject
             Image img = Panel.AddComponent<Image>();
             Button btn = Panel.AddComponent<Button>();
@@ -212,25 +222,11 @@ namespace KillShop
                 icon.GetComponent<RectTransform>().offsetMax = new Vector2(-50, 0);
                 icon.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 0);
 
-                string textToShow = string.Format("{0} ({1} Souls) \r\n<size=10>{2}</size>", name, price, description);
-
-                if (description == null || description == "")
-                {
-                    textToShow = string.Format("{0} ({1} Souls)", name, price);
-                }
-
-                btn.GetComponentInChildren<Text>().text = textToShow;
+                btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Souls)", name, price);
 
                 shopItems.GetShopItems()[index].OnBought += delegate ()
                 {
-                    string newText = string.Format("{0} ({1} Souls) \r\n<size=10>{2}</size>", name, shopItems.GetShopItems()[index].Price, description);
-
-                    if (description == null || description == "")
-                    {
-                        newText = string.Format("{0} ({1} Souls)", name, shopItems.GetShopItems()[index].Price);
-                    }
-
-                    btn.GetComponentInChildren<Text>().text = newText;
+                    btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Souls)", name, shopItems.GetShopItems()[index].Price);
                 };
 
                 btn.onClick.AddListener(delegate ()
@@ -287,7 +283,7 @@ namespace KillShop
 
             img.color = notBuyable;
 
-            Panel.AddComponent<RectTransform>();
+            //Panel.AddComponent<RectTransform>();
 
             Button btn = Panel.AddComponent<Button>();
 
@@ -426,6 +422,77 @@ namespace KillShop
 
 
             return toBuyPrice;
+        }
+
+        private GameObject CreateDescriptionPanel(GameObject bgImage)
+        {
+            GameObject Panel = new GameObject("Main Panel"); //Create the GameObject
+                                                             //PanelIMG.sprite = currentSprite; //Set the Sprite of the Image Component on the new GameObject
+                                                             //Panel.AddComponent<RectTransform>();
+            Panel.AddComponent<Image>();
+            Panel.GetComponent<Image>().color = new Color(38f / 255f, 37f / 255f, 42f / 255f, 32f / 255f);
+            Panel.GetComponent<RectTransform>().SetParent(bgImage.transform); //Assign the newly created Image GameObject as a Child of the Parent Panel.
+            Panel.SetActive(true); //Activate the GameObject
+            Panel.GetComponent<RectTransform>().anchorMin = new Vector2(.5f, .5f);
+            Panel.GetComponent<RectTransform>().anchorMax = new Vector2(.5f, .5f);
+            Panel.GetComponent<RectTransform>().pivot = new Vector2(.5f, .5f);
+            Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(250, 100);
+            Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(425f, 325f);
+
+            Panel.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+
+            return Panel;
+        }
+
+        private GameObject CreateDescriptionImage(GameObject descriptionPanel)
+        {
+            GameObject Panel = new GameObject("Killcounter Description BG Image"); //Create the GameObject
+            Image PanelIMG = Panel.AddComponent<Image>(); //Add the Image Component script
+            PanelIMG.sprite = BGTex;
+            PanelIMG.type = Image.Type.Sliced;
+            PanelIMG.fillCenter = true;
+            //PanelIMG.sprite = currentSprite; //Set the Sprite of the Image Component on the new GameObject
+            Panel.GetComponent<RectTransform>().SetParent(descriptionPanel.transform); //Assign the newly created Image GameObject as a Child of the Parent Panel.
+            Panel.SetActive(true); //Activate the GameObject
+            Panel.GetComponent<RectTransform>().anchorMin = new Vector2(0f, 0f);
+            Panel.GetComponent<RectTransform>().anchorMax = new Vector2(1f, 1f);
+            Panel.GetComponent<RectTransform>().pivot = new Vector2(.5f, .5f);
+            Panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 0f);
+            //Left Bottom
+            Panel.GetComponent<RectTransform>().offsetMin = new Vector2(0, 0);
+            //-Right -Top
+            Panel.GetComponent<RectTransform>().offsetMax = new Vector2(-0, -0);
+
+            Panel.GetComponent<RectTransform>().localScale = new Vector3(.989f, .994f, 1);
+
+            return Panel;
+        }
+
+        private GameObject CreateDescriptionText(GameObject descriptionImage)
+        {
+            GameObject Panel = new GameObject("Killcounter Description Text"); //Create the GameObject
+            Text Text = Panel.AddComponent<Text>();
+
+            Panel.GetComponent<RectTransform>().SetParent(descriptionImage.transform); //Assign the newly created Image GameObject as a Child of the Parent Panel.
+            Panel.SetActive(true); //Activate the GameObject
+            Panel.GetComponent<RectTransform>().anchorMin = new Vector2(0f, 0f);
+            Panel.GetComponent<RectTransform>().anchorMax = new Vector2(1f, 1f);
+            Panel.GetComponent<RectTransform>().pivot = new Vector2(.5f, .5f);
+
+            Panel.GetComponent<RectTransform>().offsetMin = new Vector2(0, 0);
+            Panel.GetComponent<RectTransform>().offsetMax = new Vector2(-0, 0);
+
+            Text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            //Text.fontSize = 14;
+            Text.color = Color.white;
+
+            Text.text = "Just a Sample Text!";
+
+            Text.alignment = TextAnchor.MiddleCenter;
+
+            Panel.GetComponent<RectTransform>().localScale = new Vector3(.989f, .994f, 1);
+
+            return Panel;
         }
 
         private GameObject CreateCategory(GameObject container, ShopItems.Categories categorie)

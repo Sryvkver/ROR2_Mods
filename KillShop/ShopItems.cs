@@ -47,7 +47,7 @@ namespace KillShop
             allItems.Add(new Item("Tier 1 Categorie", 0, Resources.Load<Sprite>("Textures/texSimpleTriangle"),  delegate (PlayerCharacterMasterController player)
             {
                 return 0;
-            }, Categories.Tier1, true));
+            },"", Categories.Tier1, true));
 
             int Tier1Price = config.Tier1_Price;
 
@@ -98,7 +98,7 @@ namespace KillShop
             allItems.Add(new Item("Tier 2 Categorie", 0, delegate (PlayerCharacterMasterController player)
             {
                 return 0;
-            }, Categories.Tier2, true));
+            },"", Categories.Tier2, true));
 
             int Tier2Price = config.Tier2_Price;
 
@@ -110,6 +110,20 @@ namespace KillShop
                 PickupIndex pickupIndex = new PickupIndex(allTier2Items[i]);
                 ItemIndex item = allTier2Items[i];
                 string name = Language.GetString(pickupIndex.GetPickupNameToken());
+                string description = Language.GetString(itemDef.pickupToken);
+
+                //Get all string between '<' '>' Character
+                string[] testing = Regex.Matches(description, @"\<(.+?)\>")
+                            .Cast<Match>()
+                            .Select(s => s.Groups[1].Value).ToArray();
+
+                //Remove all string from the description
+                foreach (string str in testing)
+                {
+                    description = description.Replace(str, "");
+                }
+                //Remove '<' '>' Characters
+                description = description.Replace("<", "").Replace(">", "");
 
                 allItems.Add(new Item(name, Tier2Price, Resources.Load<Sprite>(itemDef.pickupIconPath), delegate (PlayerCharacterMasterController player)
                 {
@@ -126,7 +140,7 @@ namespace KillShop
                     int itemIndex = allItems.FindIndex(a => a.Name == name);
                     allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * config.Price_Increase);
                     return 0;
-                }, Categories.Tier2));
+                },description, Categories.Tier2));
             }
             #endregion
 
@@ -135,7 +149,7 @@ namespace KillShop
             allItems.Add(new Item("Tier 3 Categorie", 0, delegate (PlayerCharacterMasterController player)
             {
                 return 0;
-            }, Categories.Tier3, true));
+            },"", Categories.Tier3, true));
 
             int Tier3Price = config.Tier3_Price;
 
@@ -147,6 +161,20 @@ namespace KillShop
                 PickupIndex pickupIndex = new PickupIndex(allTier3Items[i]);
                 ItemIndex item = allTier3Items[i];
                 string name = Language.GetString(pickupIndex.GetPickupNameToken());
+                string description = Language.GetString(itemDef.pickupToken);
+
+                //Get all string between '<' '>' Character
+                string[] testing = Regex.Matches(description, @"\<(.+?)\>")
+                            .Cast<Match>()
+                            .Select(s => s.Groups[1].Value).ToArray();
+
+                //Remove all string from the description
+                foreach (string str in testing)
+                {
+                    description = description.Replace(str, "");
+                }
+                //Remove '<' '>' Characters
+                description = description.Replace("<", "").Replace(">", "");
 
                 allItems.Add(new Item(name, Tier3Price, Resources.Load<Sprite>(itemDef.pickupIconPath), delegate (PlayerCharacterMasterController player)
                 {
@@ -163,7 +191,7 @@ namespace KillShop
                     int itemIndex = allItems.FindIndex(a => a.Name == name);
                     allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * config.Price_Increase);
                     return 0;
-                }, Categories.Tier3));
+                },description, Categories.Tier3));
             }
             #endregion
 
@@ -172,7 +200,7 @@ namespace KillShop
             allItems.Add(new Item("Lunar Categorie", 0, delegate (PlayerCharacterMasterController player)
             {
                 return 0;
-            }, Categories.Lunar, true));
+            },"", Categories.Lunar, true));
 
             int LunarItemPrice = config.Lunar_Price;
 
@@ -184,6 +212,20 @@ namespace KillShop
                 PickupIndex pickupIndex = new PickupIndex(allLunarItems[i]);
                 ItemIndex item = allLunarItems[i];
                 string name = Language.GetString(pickupIndex.GetPickupNameToken());
+                string description = Language.GetString(itemDef.pickupToken);
+
+                //Get all string between '<' '>' Character
+                string[] testing = Regex.Matches(description, @"\<(.+?)\>")
+                            .Cast<Match>()
+                            .Select(s => s.Groups[1].Value).ToArray();
+
+                //Remove all string from the description
+                foreach (string str in testing)
+                {
+                    description = description.Replace(str, "");
+                }
+                //Remove '<' '>' Characters
+                description = description.Replace("<", "").Replace(">", "");
 
                 allItems.Add(new Item(name, LunarItemPrice, Resources.Load<Sprite>(itemDef.pickupIconPath), delegate (PlayerCharacterMasterController player)
                 {
@@ -200,7 +242,7 @@ namespace KillShop
                     int itemIndex = allItems.FindIndex(a => a.Name == name);
                     allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * config.Price_Increase);
                     return 0;
-                }, Categories.Lunar));
+                },description, Categories.Lunar));
             }
             #endregion
 
@@ -211,7 +253,7 @@ namespace KillShop
             allItems.Add(new Item("Equipment Categorie", 0, Resources.Load<Sprite>("Textures/texSimpleTriangle"), delegate (PlayerCharacterMasterController player)
             {
                 return 0;
-            }, Categories.Equipment, true));
+            },"", Categories.Equipment, true));
 
             int EquipmentPrice = config.Equipment_Price;
 
@@ -223,6 +265,20 @@ namespace KillShop
                 PickupIndex pickupIndex = new PickupIndex(allEquipment[i]);
                 EquipmentIndex equipmentIndex = allEquipment[i];
                 string name = Language.GetString(pickupIndex.GetPickupNameToken());
+                string description = Language.GetString(itemDef.pickupToken);
+
+                //Get all string between '<' '>' Character
+                string[] testing = Regex.Matches(description, @"\<(.+?)\>")
+                            .Cast<Match>()
+                            .Select(s => s.Groups[1].Value).ToArray();
+
+                //Remove all string from the description
+                foreach (string str in testing)
+                {
+                    description = description.Replace(str, "");
+                }
+                //Remove '<' '>' Characters
+                description = description.Replace("<", "").Replace(">", "");
 
                 allItems.Add(new Item(name, EquipmentPrice, Resources.Load<Sprite>(itemDef.pickupIconPath), delegate (PlayerCharacterMasterController player)
                 {
@@ -239,7 +295,7 @@ namespace KillShop
                     int itemIndex = allItems.FindIndex(a => a.Name == name);
                     allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * config.Price_Increase);
                     return 0;
-                }, Categories.Equipment));
+                },description, Categories.Equipment));
             }
 
             #endregion
@@ -249,7 +305,7 @@ namespace KillShop
             allItems.Add(new Item("Exp Categorie", 0, delegate (PlayerCharacterMasterController player)
             {
                 return 0;
-            }, Categories.Experience, true));
+            },"", Categories.Experience, true));
 
             allItems.Add(new Item("50 XP", 10, delegate (PlayerCharacterMasterController player)
             {
@@ -266,7 +322,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "50 XP");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
-            }, Categories.Experience));
+            },"", Categories.Experience));
 
             allItems.Add(new Item("250 XP", 25, delegate (PlayerCharacterMasterController player)
             {
@@ -283,7 +339,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "250 XP");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
-            }, Categories.Experience));
+            },"", Categories.Experience));
 
             allItems.Add(new Item("1K XP", 50, delegate (PlayerCharacterMasterController player)
             {
@@ -300,7 +356,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "1K XP");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
-            }, Categories.Experience));
+            },"", Categories.Experience));
 
             allItems.Add(new Item("10K XP", 400, delegate (PlayerCharacterMasterController player)
             {
@@ -317,7 +373,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "10K XP");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
-            }, Categories.Experience));
+            },"", Categories.Experience));
             #endregion
 
             #region Gold
@@ -325,7 +381,7 @@ namespace KillShop
             allItems.Add(new Item("Money Categorie", 0, delegate (PlayerCharacterMasterController player)
             {
                 return 0;
-            }, Categories.Money, true));
+            },"", Categories.Money, true));
 
             allItems.Add(new Item("150 Gold", 10, delegate (PlayerCharacterMasterController player)
             {
@@ -342,7 +398,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "150 Gold");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
-            }, Categories.Money));
+            },"", Categories.Money));
 
             allItems.Add(new Item("500 Gold", 25, delegate (PlayerCharacterMasterController player)
             {
@@ -359,7 +415,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "500 Gold");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
-            }, Categories.Money));
+            },"", Categories.Money));
 
             allItems.Add(new Item("1K Gold", 40, delegate (PlayerCharacterMasterController player)
             {
@@ -376,7 +432,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "1K Gold");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
-            }, Categories.Money));
+            },"", Categories.Money));
 
             allItems.Add(new Item("10K Gold", 380, delegate (PlayerCharacterMasterController player)
             {
@@ -393,14 +449,14 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "10K Gold");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
-            }, Categories.Money));
+            },"", Categories.Money));
             #endregion
 
             #region None
             allItems.Add(new Item("Undefined Categorie", 0, delegate (PlayerCharacterMasterController player)
             {
                 return 0;
-            }, Categories.None, true));
+            },"", Categories.None, true));
 
             allItems.Add(new Item("Full HP", 10, delegate (PlayerCharacterMasterController player)
             {
@@ -416,7 +472,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "Full HP");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
-            }));
+            },"", Categories.None));
 
             allItems.Add(new Item("Full Shield", 10, delegate (PlayerCharacterMasterController player)
             {
@@ -432,7 +488,7 @@ namespace KillShop
                 int i = allItems.FindIndex(a => a.Name == "Full Shield");
                 allItems[i].Price = (int)Math.Round(allItems[i].Price * config.Price_Increase);
                 return 0;
-            }));
+            }, "", Categories.None));
             #endregion
         }
     }
@@ -448,7 +504,7 @@ namespace KillShop
         public Func<PlayerCharacterMasterController, int> Function;
         public UnityAction OnBought;
 
-        public Item(string name, int price, Sprite icon, Func<PlayerCharacterMasterController, int> func, Categories categorie = Categories.None, bool isFoldout = false, string description = "")
+        public Item(string name, int price, Sprite icon, Func<PlayerCharacterMasterController, int> func, string description, Categories categorie = Categories.None, bool isFoldout = false)
         {
             Name = name;
             Description = description;
@@ -459,7 +515,7 @@ namespace KillShop
             IsFoldOut = isFoldout;
         }
 
-        public Item(string name, int price, Func<PlayerCharacterMasterController, int> func, Categories categorie = Categories.None, bool isFoldout = false, string description = "")
+        public Item(string name, int price, Func<PlayerCharacterMasterController, int> func, string description, Categories categorie = Categories.None, bool isFoldout = false)
         {
             Name = name;
             Description = description;

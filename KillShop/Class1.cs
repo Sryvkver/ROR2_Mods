@@ -23,7 +23,7 @@ namespace KillShop
          *           Features
          *  -----------------------------
          *  - Configs
-         *  - Multiple buys at a time (5X, 10X)
+         *  [X] Multiple buys at a time (5X, 10X)
          *  - Unlockables - Unlock tier 3 once you are level 20 or finished 4 Stages
          *  - Make it possible to add custom Items
          *  
@@ -33,7 +33,6 @@ namespace KillShop
          *  - Timer between Purchase (CG Derulo)
          *  - Controller support (CG Derulo)
          *  
-         *  [X] UI tabs along the top instead of dropdowns (CG Derulo)
          *  
          *  
          *  -----------------------------
@@ -45,7 +44,6 @@ namespace KillShop
          *  -----------------------------
          *            Buyables
          *  -----------------------------
-         *  - Shield recharge (CG Derulo)
          * 
          * 
          */
@@ -147,12 +145,18 @@ namespace KillShop
                             component2 = masterObject.GetComponent<PlayerCharacterMasterController>();
                         }
 
-                        Debug.Log("Killed");
+                        //Debug.Log("Killed");
+
+                        bool isBoss = damageReport.victimBody.isBoss;
+                        bool isElite = damageReport.victimBody.isElite;
+
+                        int monsterType = isElite ? 1 : isBoss ? 2 : 0;
 
                         ExampleCommandClientCustom.Invoke(x =>
                         {
                             x.Write("Kill");
                             x.Write(component2.gameObject);
+                            x.Write((double)monsterType);
                         });
                     }
                 }
@@ -171,7 +175,7 @@ namespace KillShop
 
                 var str = x.ReadString();
 
-                Debug.Log($"[Host] {user?.userName} sent us: {str}");
+                //Debug.Log($"[Host] {user?.userName} sent us: {str}");
 
                 if (str == "Buymenu")
                 {
@@ -198,7 +202,7 @@ namespace KillShop
                     AllBuyMenuStates[id] = state;
 
                     int check = AllBuyMenuStates.FindAll(a => a == true).Count;
-                    Debug.Log(check);
+                    //Debug.Log(check);
                     if (check > 0)
                     {
                         ExampleCommandClientCustom.Invoke(y =>
@@ -277,7 +281,7 @@ namespace KillShop
 
                 var str = x.ReadString();
 
-                Debug.Log($"[Client] Host sent us: {str}");
+                //Debug.Log($"[Client] Host sent us: {str}");
 
                 if (str == "Reset")
                 {
@@ -301,20 +305,32 @@ namespace KillShop
                     Time.timeScale = floatVal;
                 }
 
-
                 if (str == "Kill")
                 {
                     GameObject go = x.ReadGameObject();
+                    int monsterType = (int)x.ReadDouble(); // 1 = Elite, 2 = Boss, 0 = Normal
                     PlayerCharacterMasterController playerCharacterMaster = go.GetComponent<PlayerCharacterMasterController>();
                     /*
                     if (this.playerCharacterMaster == null)
                         this.playerCharacterMaster = LocalUserManager.GetFirstLocalUser().cachedMasterController;
                     */
 
-
                     if (playerCharacterMaster == this.playerCharacterMaster)
                     {
-                        ++playerCharacterMaster.GetComponent<PlayerScript>().kills;
+                        if (monsterType == 1)
+                        {
+                            playerCharacterMaster.GetComponent<PlayerScript>().kills += this.playerCharacterMaster.GetComponent<PlayerScript>().config.Elite_KillCount;
+                            //Debug.Log("Killed Elite");
+                        }
+                        else if (monsterType == 2)
+                        {
+                            playerCharacterMaster.GetComponent<PlayerScript>().kills += this.playerCharacterMaster.GetComponent<PlayerScript>().config.Boss_KillCount;
+                            //Debug.Log("Killed Boss");
+                        }
+                        else
+                        {
+                            ++playerCharacterMaster.GetComponent<PlayerScript>().kills;
+                        }
                         //Chat.AddMessage("Added Kill!\n\rNew Kill count is: " + ++playerCharacterMaster.GetComponent<PlayerScript>().kills);
                     }
                 }
