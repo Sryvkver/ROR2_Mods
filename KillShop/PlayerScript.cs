@@ -133,7 +133,7 @@ namespace KillShop
                 }
                 else
                 {
-                    allBuyMenuItems.Add(CreateElement(ElementContainer, allItems[i].Name, allItems[i].Price, allItems[i].Function, i, allItems[i].Categorie, allItems[i].IsFoldOut, allItems[i].Icon));
+                    allBuyMenuItems.Add(CreateElement(ElementContainer, allItems[i].Name, allItems[i].Price, allItems[i].Function, i, allItems[i].Categorie, allItems[i].IsFoldOut, allItems[i].Icon, allItems[i].Description));
                     //Disable all items at start
                     allBuyMenuItems[allBuyMenuItems.Count-1].SetActive(false);
                 }
@@ -148,7 +148,7 @@ namespace KillShop
             };
         }
 
-        private GameObject CreateElement(GameObject container, string name, int price, Func<PlayerCharacterMasterController, int> func, int index, ShopItems.Categories categorie, bool isFoldout, Sprite itemIcon = null)
+        private GameObject CreateElement(GameObject container, string name, int price, Func<PlayerCharacterMasterController, int> func, int index, ShopItems.Categories categorie, bool isFoldout, Sprite itemIcon = null, string description = null)
         {
             GameObject Empty = new GameObject("ElementHolder");
             Empty.AddComponent<RectTransform>();
@@ -212,11 +212,25 @@ namespace KillShop
                 icon.GetComponent<RectTransform>().offsetMax = new Vector2(-50, 0);
                 icon.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 0);
 
-                btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Souls)", name, price);
+                string textToShow = string.Format("{0} ({1} Souls) \r\n<size=10>{2}</size>", name, price, description);
+
+                if (description == null || description == "")
+                {
+                    textToShow = string.Format("{0} ({1} Souls)", name, price);
+                }
+
+                btn.GetComponentInChildren<Text>().text = textToShow;
 
                 shopItems.GetShopItems()[index].OnBought += delegate ()
                 {
-                    btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Souls)", name, shopItems.GetShopItems()[index].Price);
+                    string newText = string.Format("{0} ({1} Souls) \r\n<size=10>{2}</size>", name, shopItems.GetShopItems()[index].Price, description);
+
+                    if (description == null || description == "")
+                    {
+                        newText = string.Format("{0} ({1} Souls)", name, shopItems.GetShopItems()[index].Price);
+                    }
+
+                    btn.GetComponentInChildren<Text>().text = newText;
                 };
 
                 btn.onClick.AddListener(delegate ()
@@ -231,9 +245,11 @@ namespace KillShop
                     //Deduct the souls
                     kills -= oldPrice;
                     //Update the text
-                    btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Souls)", name, shopItems.GetShopItems()[index].Price);
+                    //btn.GetComponentInChildren<Text>().text = string.Format("{0} ({1} Souls)", name, shopItems.GetShopItems()[index].Price);
                     shopItems.GetShopItems()[index].OnBought();
                 });
+
+                //btn.OnPointerEnter
 
                 OnKillsChanged += delegate ()
                 {
@@ -301,11 +317,14 @@ namespace KillShop
 
             btn.GetComponentInChildren<Text>().color = Color.white;
             btn.GetComponentInChildren<Text>().alignment = TextAnchor.MiddleCenter;
-            btn.GetComponentInChildren<Text>().text = "x5 \r\n<size=8>(" + (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 5)) + " Souls</size>)";
+            btn.GetComponentInChildren<Text>().text = "x5 \r\n<size=8>(" + GetPriceXTime(5, (int)Math.Round((float)shopItems.GetShopItems()[index].Price), config.Price_Increase) + ")</size>";
 
             btn.onClick.AddListener(delegate ()
             {
-                int price5X = (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 5));
+                //Wow this is too acurate so it deducts more/less sometime because we round the Price above :/
+                //int price5X = (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 5));
+
+                int price5X = GetPriceXTime(5, (int)Math.Round((float)shopItems.GetShopItems()[index].Price), config.Price_Increase);
 
                 if (price5X > kills)
                     return;
@@ -321,11 +340,8 @@ namespace KillShop
                 //Deduct the souls
                 kills -= price5X;
 
-                //Get new time 5 price
-                price5X = (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 5));
-
                 //Update the text
-                btn.GetComponentInChildren<Text>().text = string.Format("{0} \r\n<size=8>({1} Souls)</size>", "x5", price5X);
+                //btn.GetComponentInChildren<Text>().text = string.Format("{0} \r\n<size=8>({1} Souls)</size>", "x5", price5X);
                 shopItems.GetShopItems()[index].OnBought();
             });
 
@@ -333,14 +349,17 @@ namespace KillShop
 
             GameObject x10Button = Instantiate(Panel, elementHolder.transform);
             x10Button.name = "X10Button";
-            x10Button.GetComponentInChildren<Text>().text = "x10 \r\n<size=8>(" + (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 10)) + " Souls</size>)"; ;
+            x10Button.GetComponentInChildren<Text>().text = "x10 \r\n<size=8>(" + GetPriceXTime(10, (int)Math.Round((float)shopItems.GetShopItems()[index].Price), config.Price_Increase) + ")</size>"; ;
             x10Button.GetComponent<RectTransform>().anchoredPosition = new Vector2(449.5f, 0);
 
             Button x10BTN = x10Button.GetComponent<Button>();
             Image x10img = x10Button.GetComponent<Image>();
             x10BTN.onClick.AddListener(delegate ()
             {
-                int price10X = (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 10));
+                //Wow this is too acurate so it deducts more/less sometime because we round the Price above :/
+                //int price10X = (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 10));
+
+                int price10X = GetPriceXTime(10, (int)Math.Round((float)shopItems.GetShopItems()[index].Price), config.Price_Increase);
 
                 if (price10X > kills)
                     return;
@@ -356,24 +375,21 @@ namespace KillShop
                 //Deduct the souls
                 kills -= price10X;
 
-                //Get new time 5 price
-                price10X = (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 10));
-
                 //Update the text
-                x10BTN.GetComponentInChildren<Text>().text = string.Format("{0} \r\n<size=8>({1} Souls)</size>", "x10", price10X);
+                //x10BTN.GetComponentInChildren<Text>().text = string.Format("{0} \r\n<size=8>({1} Souls)</size>", "x10", price10X);
                 shopItems.GetShopItems()[index].OnBought();
             });
 
             shopItems.GetShopItems()[index].OnBought += delegate ()
             {
-                btn.GetComponentInChildren<Text>().text = string.Format("{0} \r\n<size=8>({1} Souls)</size>", "x5", (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 5)));
-                x10BTN.GetComponentInChildren<Text>().text = string.Format("{0} \r\n<size=8>({1} Souls)</size>", "x10", (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 10)));
+                btn.GetComponentInChildren<Text>().text = string.Format("{0} \r\n<size=8>({1})</size>", "x5", GetPriceXTime(5, (int)Math.Round((float)shopItems.GetShopItems()[index].Price), config.Price_Increase));
+                x10BTN.GetComponentInChildren<Text>().text = string.Format("{0} \r\n<size=8>({1})</size>", "x10", GetPriceXTime(10, (int)Math.Round((float)shopItems.GetShopItems()[index].Price), config.Price_Increase));
             };
 
             OnKillsChanged += delegate ()
             {
-                int price5X = (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 5));
-                int price10X = (int)Math.Round((float)shopItems.GetShopItems()[index].Price * Math.Pow(config.Price_Increase, 10));
+                int price5X = GetPriceXTime(5, (int)Math.Round((float)shopItems.GetShopItems()[index].Price), config.Price_Increase);
+                int price10X = GetPriceXTime(10, (int)Math.Round((float)shopItems.GetShopItems()[index].Price), config.Price_Increase);
                 if (price5X > kills)
                 {
                     img.color = notBuyable;
@@ -394,6 +410,22 @@ namespace KillShop
             };
 
             Panel.SetActive(true); //Activate the GameObject
+        }
+
+        private int GetPriceXTime(int times, int price, float increase)
+        {
+            int newPrice = price;
+            int toBuyPrice = price;
+
+            //This feels so shitty, but it accounts for the rounding issue, so thats nice I guess
+            for (int i = 0; i < times-1; i++)
+            {
+                newPrice = (int)Math.Round((float)newPrice * increase);
+                toBuyPrice += newPrice;
+            }
+
+
+            return toBuyPrice;
         }
 
         private GameObject CreateCategory(GameObject container, ShopItems.Categories categorie)

@@ -2,7 +2,9 @@
 using RoR2;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -57,8 +59,22 @@ namespace KillShop
                 PickupIndex pickupIndex = new PickupIndex(allTier1Items[i]);
                 ItemIndex item = allTier1Items[i];
                 string name = Language.GetString(pickupIndex.GetPickupNameToken());
+                string description = Language.GetString(itemDef.pickupToken);
 
-                allItems.Add(new Item(name, Tier1Price, Resources.Load<Sprite>(itemDef.pickupIconPath), delegate (PlayerCharacterMasterController player)
+                //Get all string between '<' '>' Character
+                string[] testing = Regex.Matches(description, @"\<(.+?)\>")
+                            .Cast<Match>()
+                            .Select(s => s.Groups[1].Value).ToArray();
+
+                //Remove all string from the description
+                foreach (string str in testing)
+                {
+                    description = description.Replace(str, "");
+                }
+                //Remove '<' '>' Characters
+                description = description.Replace("<", "").Replace(">", "");
+
+                allItems.Add(new Item(name, description: description, price: Tier1Price, icon: Resources.Load<Sprite>(itemDef.pickupIconPath), func: delegate (PlayerCharacterMasterController player)
                 {
                     Vector3 pos = player.master.GetBodyObject().transform.position;
 
@@ -71,9 +87,9 @@ namespace KillShop
                     });
 
                     int itemIndex = allItems.FindIndex(a => a.Name == name);
-                    allItems[itemIndex].Price = (int)Math.Round(allItems[itemIndex].Price * config.Price_Increase);
+                    allItems[itemIndex].Price = (int)Math.Round((float)allItems[itemIndex].Price * config.Price_Increase);
                     return 0;
-                }, Categories.Tier1));
+                }, categorie: Categories.Tier1));
             }
             #endregion
 
@@ -424,6 +440,7 @@ namespace KillShop
     class Item
     {
         public string Name;
+        public string Description;
         public int Price;
         public bool IsFoldOut;
         public Categories Categorie;
@@ -431,9 +448,10 @@ namespace KillShop
         public Func<PlayerCharacterMasterController, int> Function;
         public UnityAction OnBought;
 
-        public Item(string name, int price, Sprite icon, Func<PlayerCharacterMasterController, int> func, Categories categorie = Categories.None, bool isFoldout = false)
+        public Item(string name, int price, Sprite icon, Func<PlayerCharacterMasterController, int> func, Categories categorie = Categories.None, bool isFoldout = false, string description = "")
         {
             Name = name;
+            Description = description;
             Price = price;
             Function = func;
             Icon = icon;
@@ -441,9 +459,10 @@ namespace KillShop
             IsFoldOut = isFoldout;
         }
 
-        public Item(string name, int price, Func<PlayerCharacterMasterController, int> func, Categories categorie = Categories.None, bool isFoldout = false)
+        public Item(string name, int price, Func<PlayerCharacterMasterController, int> func, Categories categorie = Categories.None, bool isFoldout = false, string description = "")
         {
             Name = name;
+            Description = description;
             Price = price;
             Function = func;
             Categorie = categorie;
