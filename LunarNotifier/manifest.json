@@ -1,7 +1,7 @@
 {
     "name": "FelixFire-LunarNotifier",
     "version_number": "1.2.0",
-    "website_url": "https://github.com/IFixYourRoR2Mods/ROR2_Mods/tree/master/LunarNotifier",
+    "website_url": "https://github.com/IFixYourRoR2Mods/FelixFire_ROR2MODS",
     "description": "FIXED: Sends a chat message when a lunar coin drops, now with pinging support",
     "dependencies": [
         "bbepis-BepInExPack-3.0.0"
