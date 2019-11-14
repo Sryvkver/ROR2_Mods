@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -39,7 +39,12 @@
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>..\libs\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /y $(TargetPath) $(ProjectDir)" />
+  </Target>
 
 </Project>

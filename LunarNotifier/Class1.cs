@@ -7,68 +7,60 @@ using System.Collections;
 
 namespace BepInExMods
 {
-    [BepInPlugin("dev.felixire.LunarNotifier", "LunarModifier", "1.1.0")]
+    [BepInPlugin("dev.felixire.LunarNotifier", "LunarModifier", "1.1.9")]
     class LunarNotifier : BaseUnityPlugin
     {
-        private static ConfigWrapper<bool> confPing { get; set; }
-        private static ConfigWrapper<int> confPingDuration { get; set; }
+        private static ConfigEntry<bool> ConfPing { get; set; }
+        private static ConfigEntry<int> ConfPingDuration { get; set; }
         PingIndicator pingIndicator;
         Coroutine clearCoroutine;
-        private static bool shouldPing
+        private static bool ShouldPing
         {
             get
             {
-                return confPing.Value;
+                return ConfPing.Value;
             }
             set
             {
-                confPing.Value = value;
+                ConfPing.Value = value;
             }
         }
-        private static int pingDuration
+        private static int PingDuration
         {
             get
             {
-                return confPingDuration.Value;
+                return ConfPingDuration.Value;
             }
             set
             {
-                confPingDuration.Value = value;
+                ConfPingDuration.Value = value;
             }
         }
 
         public void Awake()
         {
             //Setup config
-            confPing = base.Config.Wrap<bool>("LunarNotifier", "Autoping?", "Weather or not to automatically lunar coins. (true or false)", true);
-            confPingDuration = base.Config.Wrap<int>("LunarNotifier", "Autoping Duration", "How long the ping should be visible. (Seconds)", 5);
+            ConfPing = Config.Bind("LunarNotifier", "Autoping?", true, "Wether or not to automatically lunar coins. (true or false)");
+            ConfPingDuration = Config.Bind("LunarNotifier", "Autoping Duration", 5, "How long the ping should be visible. (Seconds)");
             //Check for some invalid Config settings
             //Got to add more than that...
-            if (pingDuration < 0)
-                pingDuration = 5;
+            if (PingDuration < 0)
+                PingDuration = 5;
             On.RoR2.PickupDropletController.CreatePickupDroplet += PickupDropletController_CreatePickupDroplet;
-
-            //On.RoR2.DeathRewards.OnKilled += DeathRewards_OnKilled; //Always drop lunar coins. good for testing
-        }
-
-        private void DeathRewards_OnKilled(On.RoR2.DeathRewards.orig_OnKilled orig, DeathRewards self, DamageInfo damageInfo)
-        {
-            PickupDropletController.CreatePickupDroplet(PickupIndex.lunarCoin1, damageInfo.position, Vector3.zero);
-
-            orig.Invoke(self, damageInfo);
+            
         }
 
         private void PickupDropletController_CreatePickupDroplet(On.RoR2.PickupDropletController.orig_CreatePickupDroplet orig, PickupIndex pickupIndex, Vector3 position, Vector3 velocity)
         {
-            orig.Invoke(pickupIndex, position, velocity);
+            orig(pickupIndex, position, velocity);
             //Check if a lunar coin dropped
-            if (pickupIndex != PickupIndex.lunarCoin1)
+            if (pickupIndex != PickupCatalog.FindPickupIndex("LunarCoin.Coin0"))
                 return;
 
             //Send message
             Chat.AddMessage("<color=#307FFF>Lunar Coin</color><style=cEvent> Dropped</style>");
 
-            if (!shouldPing)
+            if (!ShouldPing)
                 return;
             
             //Create a new Ping
@@ -82,7 +74,7 @@ namespace BepInExMods
             {
                 Destroy(GameObject.Find("FakeLunarCoin"));
             }
-            catch (System.Exception)
+            catch 
             {
 
             }
@@ -90,37 +82,6 @@ namespace BepInExMods
             //Create Ping Target
             //Had weird glitches when I used the real Lunar coin
             GameObject fakeLunarCoin = new GameObject("FakeLunarCoin");
-
-            #region OLD
-            /*try
-            {
-                //<style=cIsHealing>💝 Der Felix 💝 wants to move here.</style>
-                if(GameObject.Find("PickupLunarCoin") != null)
-                {
-                    fakeLunarCoin = GameObject.Find("PickupLunarCoin");
-                    if (fakeLunarCoin.GetComponentInParent<IDisplayNameProvider>() != null)
-                        Chat.AddMessage("1 Not Null");
-                    else
-                        Chat.AddMessage("1 Null");
-
-                    if (fakeLunarCoin.GetComponent<IDisplayNameProvider>() != null)
-                        Chat.AddMessage("2 Not Null");
-                    else
-                        Chat.AddMessage("2 Null");
-
-                    if (fakeLunarCoin.GetComponentInChildren<IDisplayNameProvider>() != null)
-                        Chat.AddMessage("3 Not Null");
-                    else
-                        Chat.AddMessage("3 Null");
-                }
-
-            }
-            catch (System.Exception)
-            {
-
-                Chat.AddMessage("Not Found!");
-            }*/
-            #endregion
 
             //Position it to the real Lunar Coin
             fakeLunarCoin.transform.position = position;
@@ -165,7 +126,7 @@ namespace BepInExMods
 
         IEnumerator ClearPing()
         {
-            yield return new WaitForSeconds(pingDuration);
+            yield return new WaitForSeconds(PingDuration);
             try
             {
                 UnityEngine.Object.Destroy(this.pingIndicator.gameObject);
